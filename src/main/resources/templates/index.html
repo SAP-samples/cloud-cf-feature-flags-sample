@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layout">
+<head></head>
+<body>
+  <div class="container" layout:fragment="content">
+    <div class="page-header">
+      <div class="row">
+        <div class="col-lg-4 col-md-2 col-sm-2">
+          <h1>Evaluation Form</h1>
+          <form class="bs-component">
+            <div class="form-group">
+              <label class="control-label" for="feature-flag-name-input">Feature Flag Name</label>
+              <div class="input-group">
+                <input type="text" class="form-control" id="feature-flag-name-input" />
+                <span class="input-group-btn">
+                  <a id="evaluation-ancor" class="btn btn-primary" href="/">Evaluate</a>
+                </span>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div layout:fragment="scripts">
+    <script src="../js/index.js"></script>
+  </div>
+</body>
+</html>

@@ -1,0 +1,4 @@
+---
+applications:
+- name: feature-flags-demo
+  path: target/feature-flags-demo.jar
