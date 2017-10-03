@@ -8,7 +8,7 @@ Feature Flags service Demo Application is a simple Spring Boot application that 
 * have an [SAP Cloud Platform trial account on Cloud Foundry environment](https://help.sap.com/viewer/65de2977205c403bbc107264b8eccf4b/Cloud/en-US/65d74d39cb3a4bf8910cd36ec54d2b99.html)
 * have a [trial space on a Cloud Foundry instance](https://help.sap.com/viewer/65de2977205c403bbc107264b8eccf4b/Cloud/en-US/76e79d62fa0149d5aa7b0698c9a33687.html)
 * have set up a [curl](https://curl.haxx.se/download.html) plug-in for cmd 
-* have [installed cf CLI](https://help.sap.com/viewer/65de2977205c403bbc107264b8eccf4b/Cloud/en-US/350356d1dc314d3199dca15bd2ab9b0e.html)
+* have [installed cf CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
 
 ## Running the Application on SAP Cloud Platform
 
@@ -54,7 +54,7 @@ Follow these steps to run the Feature Flags Service Demo application on SAP Clou
     OK
     service          	plans    	description
     ...
-    feature-flags    	lite     	[BETA] Feature Flags service for controlling feature rollout
+    feature-flags    	lite     	Feature Flags service for controlling feature rollout
     ...
     
 
