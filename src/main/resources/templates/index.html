@@ -5,16 +5,15 @@
 <body>
   <div class="container" layout:fragment="content">
     <div class="page-header">
-      <div class="row">
-        <div class="col-lg-4 col-md-2 col-sm-2">
+      <div class="row" style="margin-bottom: 2em">
+        <div align="center" class="col-lg-12">
           <h1>Evaluation Form</h1>
-          <form class="bs-component">
+          <form class="bs-component" style="width: 60%">
             <div class="form-group">
-              <label class="control-label" for="feature-flag-name-input">Feature Flag Name</label>
               <div class="input-group">
-                <input type="text" class="form-control" id="feature-flag-name-input" />
+                <input type="text" class="form-control" id="feature-flag-name-input" placeholder="Feature Flag Name"/>
                 <span class="input-group-btn">
-                  <a id="evaluation-ancor" class="btn btn-primary" href="/">Evaluate</a>
+                  <a id="evaluation-ancor" class="btn btn-primary" href="/"><span class="glyphicon glyphicon-equalizer"></span> Evaluate</a>
                 </span>
               </div>
             </div>

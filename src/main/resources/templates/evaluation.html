@@ -5,8 +5,8 @@
 <body>
   <div class="container" layout:fragment="content">
     <div class="page-header">
-      <div class="row">
-        <div class="col-lg-8 col-md-6 col-sm-4">
+      <div class="row" style="margin-bottom: 2em">
+        <div align="center" class="col-lg-12">
           <h1>Evaluation Result</h1>
           <div th:switch="${status}">
             <div th:case="'missing-service-instance'" class="alert alert-dismissible alert-danger">
@@ -25,6 +25,11 @@
               Feature flag with name <strong>[[${id}]]</strong> is <strong>enabled</strong>. Use Feature Flags Service dashboard to toggle it!
             </div>
           </div>
+        </div>
+        <div align="right">
+			<span class="btn-group">
+				<a id="back_button" class="btn btn-primary" href="/"><span class="glyphicon glyphicon-share-alt"></span> Go back</a>
+			</span>
         </div>
       </div>
     </div>
