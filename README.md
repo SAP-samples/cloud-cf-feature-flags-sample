@@ -17,17 +17,18 @@ Follow these steps to run the Feature Flags Service Demo application on SAP Clou
 > **Note:** This guide uses the Cloud Foundry trial account on Europe (Frankfurt) region (https://account.hanatrial.ondemand.com/cockpit#/home/overview). If you want to use a different region, you have to modify the domain in the requests. For more information about regions and hosts on SAP Cloud Platform, Cloud Foundry environment, see [Regions and Hosts](https://help.sap.com/viewer/65de2977205c403bbc107264b8eccf4b/Cloud/en-US/350356d1dc314d3199dca15bd2ab9b0e.html).
 
 1. [Build the application.](#1-build-the-feature-flags-demo-application)
-2. [Deploy the application.](#2-deploy-feature-flags-demo-on-sap-cloud-platform)
-3. [Create a service instance of the Feature Flag service.](#3-create-a-service-instance-of-feature-flags-service)
-4. [Call feature-flags-demo application /vcap_services end-point.](#4-call-the-feature-flags-demo-application-vcap_services-end-point)
-5. [Bind feature-flags-demo to feature-flags-instance.](#5-bind-feature-flags-demo-to-feature-flags-instance)
-6. [Restage feature-flags-demo application.](#6-restage-feature-flags-demo)
-7. [Ensure that feature-flags-instance is properly bound to feature-flags-demo.](#7-ensure-that-feature-flags-instance-is-bound-to-feature-flags-demo)
-8. [Perform an evaluation of missing feature flag.](#8-evaluate-if-the-feature-flag-is-missing)
-9. [Create a new feature flag.](#9-create-a-new-feature-flag)
-10. [Perform an evaluation of the newly created feature flag.](#10-evaluate-the-newly-created-feature-flag)
-11. [Enable the feature flag.](#11-enable-the-feature-flag)
-12. [Verify that the feature flag was properly enabled.](#12-verify-that-the-feature-flag-is-enabled)
+2. [Edit the manifest.yml.](#2-edit-application-name-in-manifest-file)
+3. [Deploy the application.](#3-deploy-feature-flags-demo-on-sap-cloud-platform)
+4. [Create a service instance of the Feature Flag service.](#4-create-a-service-instance-of-feature-flags-service)
+5. [Call feature-flags-demo application /vcap_services end-point.](#5-call-the-feature-flags-demo-application-vcap_services-end-point)
+6. [Bind feature-flags-demo to feature-flags-instance.](#6-bind-feature-flags-demo-to-feature-flags-instance)
+7. [Restage feature-flags-demo application.](#7-restage-feature-flags-demo)
+8. [Ensure that feature-flags-instance is properly bound to feature-flags-demo.](#8-ensure-that-feature-flags-instance-is-bound-to-feature-flags-demo)
+9. [Perform an evaluation of missing feature flag.](#9-evaluate-if-the-feature-flag-is-missing)
+10. [Create a new feature flag.](#10-create-a-new-feature-flag)
+11. [Perform an evaluation of the newly created feature flag.](#11-evaluate-the-newly-created-feature-flag)
+12. [Enable the feature flag.](#12-enable-the-feature-flag)
+13. [Verify that the feature flag was properly enabled.](#13-verify-that-the-feature-flag-is-enabled)
 
 ### 1. Build the feature-flags-demo Application 
 
@@ -37,15 +38,24 @@ Follow these steps to run the Feature Flags Service Demo application on SAP Clou
 
 > **Note:** Alternatively, you can use the Eclipse IDE, use the `clean install` goal from _Run As > Maven Build..._ menu.
 
-### 2. Deploy feature-flags-demo on SAP Cloud Platform
+### 2. Edit application name in manifest file
+
+Due to CloudFoundry's limitiation in regards to application naming it's quite possible for someone to have already deployed the Feature Flags demo application with the **feature-flags-demo** name as it is currently set in the **manifest.yml** file. CloudFoundry will not allow another application with the same name to be deployed, so you **MUST** edit the manifest file and change the application name before deploying. For example:
+
+    ---
+    applications:
+    - name: feature-flags-demo123
+      path: target/feature-flags-demo.jar
+
+### 3. Deploy feature-flags-demo on SAP Cloud Platform
 
     $ cf api https://api.cf.eu10.hana.ondemand.com
     $ cf login
     $ cf push
 
-### 3. Create a Service Instance of Feature Flags service
+### 4. Create a Service Instance of Feature Flags service
 
-#### 3.1 Ensure the `feature-flags` Service Exists in the Marketplace
+#### 4.1 Ensure the `feature-flags` Service Exists in the Marketplace
 
     $ cf marketplace
     
@@ -58,7 +68,7 @@ Follow these steps to run the Feature Flags Service Demo application on SAP Clou
     ...
     
 
-#### 3.2 Create a Service Instance of Feature Flags with Plan `lite`
+#### 4.2 Create a Service Instance of Feature Flags with Plan `lite`
 
     $ cf create-service feature-flags lite feature-flags-instance
     
@@ -69,7 +79,7 @@ Follow these steps to run the Feature Flags Service Demo application on SAP Clou
 > **Note:** Alternatively, you can also use the SAP Cloud Platform Cockpit. See [Create a Service Instance](https://help.sap.com/viewer/2250efa12769480299a1acd282b615cf/Cloud/en-US/c7b30b5bf54149148d2302617917dc3e.html).
 
 
-### 4. Call the feature-flags-demo Application /vcap_services End-Point
+### 5. Call the feature-flags-demo Application /vcap_services End-Point
 
 > **Note**: Expect to receive an empty JSON.
 
@@ -79,7 +89,7 @@ In the command you use the following URL: \<application_URL\>/vcap_services. You
 
     $ curl https://feature-flags-demo.cfapps.eu10.hana.ondemand.com/vcap_services
 
-### 5. Bind feature-flags-demo to feature-flags-instance
+### 6. Bind feature-flags-demo to feature-flags-instance
 
     $ cf bind-service feature-flags-demo feature-flags-instance
     
@@ -90,13 +100,13 @@ In the command you use the following URL: \<application_URL\>/vcap_services. You
 
 > **Note:** Alternatively, you can also use the SAP Cloud Platform Cockpit. See [Bind Your Application to the Feature Flags Service Instance](https://help.sap.com/viewer/2250efa12769480299a1acd282b615cf/Cloud/en-US/e7ef0ce6d4b14ae387de5bb18549c250.html).
 
-### 6. Restage feature-flags-demo
+### 7. Restage feature-flags-demo
 
 Restage `feature-flags-demo` application so the changes in the application environment take effect.
 
     $ cf restage feature-flags-demo
 
-### 7. Ensure that feature-flags-instance is Bound to feature-flags-demo
+### 8. Ensure that feature-flags-instance is Bound to feature-flags-demo
 
 > **Note**: Expect to receive the injected environment variables by the Feature Flags service.
 
@@ -127,7 +137,7 @@ Sample JSON response:
 }
 ```
 
-### 8. Evaluate if the Feature Flag is Missing
+### 9. Evaluate if the Feature Flag is Missing
 
 > **Note**: Expect the feature flag to be missing.
 
@@ -135,7 +145,7 @@ Sample JSON response:
 2. Evaluate a feature flag with random name (for example, type in 'my-flag').
 The result should state that the feature flag with the given name is missing.
 
-### 9. Create a New Feature Flag
+### 10. Create a New Feature Flag
 
 1. Navigate to Feature Flags service instance dashboard in the SAP Cloud Platform Cockpit (for example, https://feature-flags-dashboard.cfapps.eu10.hana.ondemand.com/manageinstances/<instance-id\>). The instance ID is a unique ID of the service instance. 
 
@@ -145,7 +155,7 @@ The result should state that the feature flag with the given name is missing.
 3. Fill in the required fields (for example, 'my-flag' for _Name_, 'Super cool feature' for _Description_ and 'OFF' for _State_).
 4. Choose _Add_.
 
-### 10. Evaluate the Newly Created Feature Flag
+### 11. Evaluate the Newly Created Feature Flag
 
 > **Note**: Expect the feature flag to be disabled.
 
@@ -154,7 +164,7 @@ The result should state that the feature flag with the given name is missing.
 3. Evaluate the newly created feature flag.
 The result should state that the feature flag with the given name is disabled.
 
-### 11. Enable the Feature Flag
+### 12. Enable the Feature Flag
 
 1. Navigate to Feature Flags service instance dashboard in the SAP Cloud Platform Cockpit (for example, https://feature-flags-dashboard.cfapps.eu10.hana.ondemand.com/manageinstances/<instance-id\>). The instance ID is a unique ID of the service instance. 
 
@@ -162,7 +172,7 @@ The result should state that the feature flag with the given name is disabled.
 
 2. Enable the feature flag using the switch in the _State_ column.
 
-### 12. Verify that the Feature Flag is Enabled
+### 13. Verify that the Feature Flag is Enabled
 
 > **Note**: Expect the feature flag to be enabled.
 
