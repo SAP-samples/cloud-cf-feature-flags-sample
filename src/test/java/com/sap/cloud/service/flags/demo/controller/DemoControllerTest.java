@@ -21,7 +21,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.sap.cloud.service.flags.demo.FeatureFlagsDemoApplication;
-import com.sap.cloud.service.flags.demo.service.FeatureFlagStatus;
+import com.sap.cloud.service.flags.demo.service.FlagStatus;
 import com.sap.cloud.service.flags.demo.service.FeatureFlagsService;
 
 @RunWith(SpringRunner.class)
@@ -57,21 +57,21 @@ public class DemoControllerTest {
 
 	@Test
 	public void testEvaluate_EvaluatesEnabledFeatureFlag() throws Exception {
-		when(featureFlagsService.getFeatureFlagStatus("feature-flag")).thenReturn(FeatureFlagStatus.ENABLED);
+		when(featureFlagsService.getFlagStatus("feature-flag")).thenReturn(FlagStatus.ENABLED);
 		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
 				containsString("Feature flag with name <strong>feature-flag</strong> is <strong>enabled</strong>")));
 	}
 
 	@Test
 	public void testEvaluate_EvaluatesDisabledFeatureFlag() throws Exception {
-		when(featureFlagsService.getFeatureFlagStatus("feature-flag")).thenReturn(FeatureFlagStatus.DISABLED);
+		when(featureFlagsService.getFlagStatus("feature-flag")).thenReturn(FlagStatus.DISABLED);
 		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
 				containsString("Feature flag with name <strong>feature-flag</strong> is <strong>disabled</strong>")));
 	}
 
 	@Test
 	public void testEvaluate_EvaluatesMissingFeatureFlag() throws Exception {
-		when(featureFlagsService.getFeatureFlagStatus("feature-flag")).thenReturn(FeatureFlagStatus.MISSING);
+		when(featureFlagsService.getFlagStatus("feature-flag")).thenReturn(FlagStatus.MISSING);
 		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
 				containsString("Feature flag with name <strong>feature-flag</strong> is <strong>missing</strong>")));
 	}

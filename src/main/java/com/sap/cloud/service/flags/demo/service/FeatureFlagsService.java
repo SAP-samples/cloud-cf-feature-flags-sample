@@ -48,7 +48,7 @@ public class FeatureFlagsService {
 	 * @return the feature flag status
 	 */
 
-	public FeatureFlagStatus getFeatureFlagStatus(final String id) {
+	public FlagStatus getFlagStatus(final String id) {
 		// @formatter:off
 		URI url = UriComponentsBuilder
 					.fromUri(baseUri)
@@ -56,19 +56,19 @@ public class FeatureFlagsService {
 					.buildAndExpand(id).toUri();
 		// @formatter:on
 
-		FeatureFlagStatus status = FeatureFlagStatus.DISABLED;
+		FlagStatus status = FlagStatus.DISABLED;
 		try {
 			ResponseEntity<?> responseEntity = restOperations.getForEntity(url, Object.class);
 
 			if (responseEntity.getStatusCode() == HttpStatus.OK) {
-				status = FeatureFlagStatus.ENABLED;
+				status = FlagStatus.ENABLED;
 			}
 		} catch (HttpClientErrorException e) {
 			if (e.getStatusCode() != HttpStatus.NOT_FOUND) {
 				logger.error(ERROR_EVALUATION_MESSAGE, e);
-				status = FeatureFlagStatus.DISABLED;
+				status = FlagStatus.DISABLED;
 			} else {
-				status = FeatureFlagStatus.MISSING;				
+				status = FlagStatus.MISSING;				
 			}
 		}
 

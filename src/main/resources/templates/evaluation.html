@@ -14,15 +14,15 @@
             </div>
             <div th:case="'missing'" class="alert alert-dismissible alert-warning">
               <strong>Not found!</strong>
-              Feature flag with name <strong>[[${id}]]</strong> is <strong>missing</strong>. Try to create it using Feature Flags Service dashboard!
+              Feature flag with name <strong>[[${id}]]</strong> is <strong>missing</strong>. Try to create it using the Feature Flags Service dashboard!
             </div>
             <div th:case="'disabled'" class="alert alert-dismissible alert-danger">
               <strong>Switched off!</strong>
-              Feature flag with name <strong>[[${id}]]</strong> is <strong>disabled</strong>. Try to enable it using Feature Flags Service dashboard!
+              Feature flag with name <strong>[[${id}]]</strong> is <strong>disabled</strong>. Try to enable it using the Feature Flags Service dashboard!
             </div>
             <div th:case="'enabled'" class="alert alert-dismissible alert-success">
               <strong>Switched on!</strong>
-              Feature flag with name <strong>[[${id}]]</strong> is <strong>enabled</strong>. Use Feature Flags Service dashboard to toggle it!
+              Feature flag with name <strong>[[${id}]]</strong> is <strong>enabled</strong>. Use the Feature Flags Service dashboard to toggle it!
             </div>
           </div>
         </div>

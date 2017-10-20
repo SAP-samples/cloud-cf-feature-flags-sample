@@ -62,7 +62,7 @@ public class DemoController {
 		if (!hasBoundServiceInstance()) {
 			status = "missing-service-instance";
 		} else {
-			status = featureFlagsServiceOptional.get().getFeatureFlagStatus(id).toString();
+			status = featureFlagsServiceOptional.get().getFlagStatus(id).toString();
 		}
 
 		modelMap.addAttribute("status", status);

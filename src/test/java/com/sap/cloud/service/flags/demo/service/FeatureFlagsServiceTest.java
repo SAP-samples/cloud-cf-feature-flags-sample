@@ -36,8 +36,8 @@ public class FeatureFlagsServiceTest {
 		ResponseEntity<Object> responseEntity = new ResponseEntity<>(HttpStatus.OK);
 		when(restOperations.getForEntity(EVALUATION_URI, Object.class)).thenReturn(responseEntity);
 
-		FeatureFlagStatus actual = featureFlagsService.getFeatureFlagStatus("feature-flag");
-		assertEquals(FeatureFlagStatus.ENABLED, actual);
+		FlagStatus actual = featureFlagsService.getFlagStatus("feature-flag");
+		assertEquals(FlagStatus.ENABLED, actual);
 	}
 
 	@Test
@@ -45,8 +45,8 @@ public class FeatureFlagsServiceTest {
 		ResponseEntity<Object> responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		when(restOperations.getForEntity(EVALUATION_URI, Object.class)).thenReturn(responseEntity);
 
-		FeatureFlagStatus actual = featureFlagsService.getFeatureFlagStatus("feature-flag");
-		assertEquals(FeatureFlagStatus.DISABLED, actual);
+		FlagStatus actual = featureFlagsService.getFlagStatus("feature-flag");
+		assertEquals(FlagStatus.DISABLED, actual);
 	}
 
 	@Test
@@ -54,8 +54,8 @@ public class FeatureFlagsServiceTest {
 		HttpClientErrorException exception = new HttpClientErrorException(HttpStatus.NOT_FOUND);
 		when(restOperations.getForEntity(EVALUATION_URI, Object.class)).thenThrow(exception);
 
-		FeatureFlagStatus actual = featureFlagsService.getFeatureFlagStatus("feature-flag");
-		assertEquals(FeatureFlagStatus.MISSING, actual);
+		FlagStatus actual = featureFlagsService.getFlagStatus("feature-flag");
+		assertEquals(FlagStatus.MISSING, actual);
 	}
 
 	@Test
@@ -63,7 +63,7 @@ public class FeatureFlagsServiceTest {
 		HttpClientErrorException exception = new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
 		when(restOperations.getForEntity(EVALUATION_URI, Object.class)).thenThrow(exception);
 
-		FeatureFlagStatus actual = featureFlagsService.getFeatureFlagStatus("feature-flag");
-		assertEquals(FeatureFlagStatus.DISABLED, actual);
+		FlagStatus actual = featureFlagsService.getFlagStatus("feature-flag");
+		assertEquals(FlagStatus.DISABLED, actual);
 	}
 }
