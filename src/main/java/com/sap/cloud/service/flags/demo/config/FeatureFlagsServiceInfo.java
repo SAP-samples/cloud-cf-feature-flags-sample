@@ -14,8 +14,8 @@ public class FeatureFlagsServiceInfo extends UriBasedServiceInfo {
 
 	public FeatureFlagsServiceInfo(String id, String host, int port, String username, String password, String path) {
 		super(id, HTTPS_SCHEME, host, port, username, password, path);
-		Assert.notNull(username);
-		Assert.notNull(password);
+		Assert.notNull(username, "Username is missing");
+		Assert.notNull(password, "Password is missing");
 	}
 
 	public FeatureFlagsServiceInfo(String id, String uriString) {
