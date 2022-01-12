@@ -13,12 +13,12 @@ import org.springframework.cloud.cloudfoundry.Tags;
 
 public class FeatureFlagsServiceInfoCreator extends CloudFoundryServiceInfoCreator<FeatureFlagsServiceInfo> {
 
-	private static final String FEATURE_FLAGS_SERVICE_TAG = "feature-flags";
-	private static final String USERNAME = "username";
-	private static final String PASSWORD = "password";
+	private static final String TAG_FEATURE_FLAGS_SERVICE = "feature-flags";
+	private static final String TAG_USERNAME = "username";
+	private static final String TAG_PASSWORD = "password";
 	
 	public FeatureFlagsServiceInfoCreator() {
-		super(new Tags(FEATURE_FLAGS_SERVICE_TAG));
+		super(new Tags(TAG_FEATURE_FLAGS_SERVICE));
 	}
 
 	/**
@@ -30,8 +30,8 @@ public class FeatureFlagsServiceInfoCreator extends CloudFoundryServiceInfoCreat
 		String id = getId(serviceData);
 		Map<String, Object> credentials = getCredentials(serviceData);
 		URI url = URI.create(getUriFromCredentials(credentials));
-		String username = (String) credentials.get(USERNAME);
-		String password = (String) credentials.get(PASSWORD);
+		String username = (String) credentials.get(TAG_USERNAME);
+		String password = (String) credentials.get(TAG_PASSWORD);
 
 		return new FeatureFlagsServiceInfo(id, url.getHost(), url.getPort(), username, password, url.getPath());
 	}
