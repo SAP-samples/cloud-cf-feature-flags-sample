@@ -7,7 +7,7 @@ import org.springframework.cloud.service.AbstractServiceConnectorCreator;
 import org.springframework.cloud.service.ServiceConnectorConfig;
 import org.springframework.cloud.service.ServiceConnectorCreator;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.client.support.BasicAuthorizationInterceptor;
+import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
@@ -46,7 +46,7 @@ public class FeatureFlagsServiceConnectorCreator
 
 	private RestOperations createRestOperations(String username, String password) {
 		RestTemplate restTemplate = new RestTemplate();
-		ClientHttpRequestInterceptor basicAuthInterceptor = new BasicAuthorizationInterceptor(username, password);
+		ClientHttpRequestInterceptor basicAuthInterceptor = new BasicAuthenticationInterceptor(username, password);
 		restTemplate.getInterceptors().add(basicAuthInterceptor);
 
 		return restTemplate;

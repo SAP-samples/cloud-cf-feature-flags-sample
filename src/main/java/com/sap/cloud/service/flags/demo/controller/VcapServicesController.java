@@ -25,7 +25,7 @@ public class VcapServicesController {
 	 * @return the value of {@code VCAP_SERVICES} environment variable
 	 */
 
-	@GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public String getVcapServices() {
 		return services;
 	}
