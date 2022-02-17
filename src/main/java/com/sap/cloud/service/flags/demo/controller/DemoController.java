@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import com.sap.cloud.service.flags.demo.service.FeatureFlagsService;
+import com.sap.cloud.service.flags.demo.service.Flag;
 
 /**
  * Represents a controller that uses the feature toggling practice.
@@ -21,7 +22,7 @@ public class DemoController {
 	/**
 	 * Constructs a new {@link DemoController} with given
 	 * {@link FeatureFlagsService}.
-	 * 
+	 *
 	 * @param featureFlagsServiceOptional
 	 */
 
@@ -31,10 +32,10 @@ public class DemoController {
 
 	/**
 	 * Returns the homepage view.
-	 * 
+	 *
 	 * @param modelMap
 	 *            - the {@link ModelMap}
-	 * 
+	 *
 	 * @return the homepage view
 	 */
 
@@ -47,27 +48,36 @@ public class DemoController {
 	 * Returns the evaluation view performing the real feature toggling.
 	 * Depending the feature flag status an appropriate message is being
 	 * displayed.
-	 * 
+	 *
 	 * @param id
 	 *            - ID of the feature flag
 	 * @param modelMap
 	 *            - the {@link ModelMap}
-	 * 
+	 *
 	 * @return the evaluation view
 	 */
 
 	@GetMapping("/evaluate/{id}")
 	public String evaluate(@PathVariable final String id, final ModelMap modelMap) {
-		String status;
-		if (!hasBoundServiceInstance()) {
-			status = "missing-service-instance";
-		} else {
-			status = featureFlagsServiceOptional.get().getFlagStatus(id).toString();
+		String template = "evaluation";
+
+		boolean credentialsAvailable = hasBoundServiceInstance();
+		modelMap.addAttribute("credentialsAvailable", credentialsAvailable);
+
+		if (!credentialsAvailable) {
+			return template;
 		}
 
-		modelMap.addAttribute("status", status);
+		Flag flag = featureFlagsServiceOptional.get().getFlag(id);
+		boolean flagAvailable = flag != null;
+		modelMap.addAttribute("flagAvailable", flagAvailable);
 
-		return "evaluation";
+		if (flagAvailable) {
+			modelMap.addAttribute("type", flag.getType());
+			modelMap.addAttribute("variation", flag.getVariation());
+		}
+
+		return template;
 	}
 
 	protected boolean hasBoundServiceInstance() {

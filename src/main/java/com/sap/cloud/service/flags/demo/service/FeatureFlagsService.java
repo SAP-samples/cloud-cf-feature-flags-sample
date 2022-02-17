@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -17,16 +17,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class FeatureFlagsService {
 
 	private static final Logger logger = LoggerFactory.getLogger(FeatureFlagsService.class);
-	
-	private static final String ERROR_EVALUATION_MESSAGE = "An exception occurred during evaluation of a feature flag.";
-	
+
+	private static final String UNEXPECTED_STATUS_ERROR_FORMAT = "Status {} returned by server";
+
 	private URI baseUri;
 	private RestOperations restOperations;
 
 	/**
 	 * Constructs a new {@link QuotaCheck} object with give base URI and
 	 * {@link RestOperations}.
-	 * 
+	 *
 	 * @param baseUri
 	 *            - the base URI of Feature Flags service <i>(e.g.
 	 *            https://feature-flags.cfapps.us10.hana.ondemand.com/)</i>
@@ -41,37 +41,31 @@ public class FeatureFlagsService {
 	}
 
 	/**
-	 * Gets the status of a feature flag by given ID.
-	 * 
+	 * Gets the flag by given ID.
+	 *
 	 * @param id
 	 *            - ID of the feature flag
-	 * @return the feature flag status
+	 * @return the feature flag
 	 */
 
-	public FlagStatus getFlagStatus(final String id) {
+	public Flag getFlag(final String id) {
 		// @formatter:off
 		URI url = UriComponentsBuilder
 					.fromUri(baseUri)
-					.path("/api/v1/evaluate/{id}")
+					.path("/api/v2/evaluate/{id}")
 					.buildAndExpand(id).toUri();
 		// @formatter:on
 
-		FlagStatus status = FlagStatus.DISABLED;
 		try {
-			ResponseEntity<?> responseEntity = restOperations.getForEntity(url, Object.class);
+			ResponseEntity<Flag> responseEntity = restOperations.getForEntity(url, Flag.class);
+			return responseEntity.getBody();
+		} catch (HttpStatusCodeException e) {
+			if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+				return null;
+			}
 
-			if (responseEntity.getStatusCode() == HttpStatus.OK) {
-				status = FlagStatus.ENABLED;
-			}
-		} catch (HttpClientErrorException e) {
-			if (e.getStatusCode() != HttpStatus.NOT_FOUND) {
-				logger.error(ERROR_EVALUATION_MESSAGE, e);
-				status = FlagStatus.DISABLED;
-			} else {
-				status = FlagStatus.MISSING;				
-			}
+			logger.error(UNEXPECTED_STATUS_ERROR_FORMAT, e.getStatusCode());
+			throw e;
 		}
-
-		return status;
 	}
 }
