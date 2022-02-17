@@ -13,11 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cloud.localconfig.LocalConfigConnector;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.sap.cloud.service.flags.demo.service.Flag;
@@ -38,7 +41,7 @@ public class DemoControllerTest {
 	private WebApplicationContext context;
 
 	private MockMvc mockMvc;
-	private Flag booleanTrueFlag;
+	private Flag booleanFlag;
 	private Flag stringFlag;
 
 	@MockBean
@@ -50,7 +53,7 @@ public class DemoControllerTest {
 	@Before
 	public void setUp() {
 		this.mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
-		this.booleanTrueFlag = new Flag(FlagType.BOOLEAN, "true");
+		this.booleanFlag = new Flag(FlagType.BOOLEAN, "true");
 		this.stringFlag = new Flag(FlagType.STRING, "variation-1");
 	}
 
@@ -61,25 +64,55 @@ public class DemoControllerTest {
 	}
 
 	@Test
-	public void testEvaluate_EvaluatesBooleanFeatureFlag() throws Exception {
-		when(featureFlagsService.getFlag("feature-flag")).thenReturn(booleanTrueFlag);
+	public void testEvaluate_EvaluatesBooleanFeatureFlag_WithoutIdentifier() throws Exception {
+		when(featureFlagsService.getFlag("feature-flag", null)).thenReturn(booleanFlag);
 		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
 				containsString(
 						"Feature flag with name <strong>feature-flag</strong> is <strong>BOOLEAN</strong>. Variation is <strong>true</strong>.")));
 	}
 
 	@Test
+	public void testEvaluate_EvaluatesBooleanFeatureFlag_WithEmptyIdentifier() throws Exception {
+		when(featureFlagsService.getFlag("feature-flag", "")).thenReturn(booleanFlag);
+		mockMvc.perform(get("/evaluate/feature-flag?identifier=")).andExpect(status().isOk()).andExpect(content().string(
+				containsString(
+						"Feature flag with name <strong>feature-flag</strong> is <strong>BOOLEAN</strong>. Variation is <strong>true</strong>.")));
+	}
+
+	@Test
+	public void testEvaluate_EvaluatesBooleanFeatureFlag_WithIdentifier() throws Exception {
+		when(featureFlagsService.getFlag("feature-flag", "my-identifier")).thenReturn(booleanFlag);
+		mockMvc.perform(get("/evaluate/feature-flag?identifier=my-identifier")).andExpect(status().isOk()).andExpect(content().string(
+				containsString(
+						"Feature flag with name <strong>feature-flag</strong> is <strong>BOOLEAN</strong>. Variation is <strong>true</strong>.")));
+	}
+
+	@Test
 	public void testEvaluate_EvaluatesStringFeatureFlag() throws Exception {
-		when(featureFlagsService.getFlag("feature-flag")).thenReturn(stringFlag);
+		when(featureFlagsService.getFlag("feature-flag", null)).thenReturn(stringFlag);
 		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
 				containsString("Feature flag with name <strong>feature-flag</strong> is <strong>STRING</strong>. Variation is <strong>variation-1</strong>.")));
 	}
 
 	@Test
 	public void testEvaluate_EvaluatesMissingFeatureFlag() throws Exception {
-		when(featureFlagsService.getFlag("feature-flag")).thenReturn(null);
+		when(featureFlagsService.getFlag("feature-flag", null)).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
 				containsString("Feature flag with name <strong>feature-flag</strong> is <strong>missing</strong>")));
+	}
+
+	@Test
+	public void testEvaluate_EvaluatesFeatureFlag_WithoutRequiredIdentifier() throws Exception {
+		when(featureFlagsService.getFlag("feature-flag", null)).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
+		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
+				containsString("Status 400 returned by Service")));
+	}
+
+	@Test
+	public void testEvaluate_WhenUnexpectedErrorOccurs() throws Exception {
+		when(featureFlagsService.getFlag("feature-flag", null)).thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
+		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
+				containsString("Status 500 returned by Service")));
 	}
 
 	@Test

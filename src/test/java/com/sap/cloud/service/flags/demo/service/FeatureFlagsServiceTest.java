@@ -14,10 +14,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestOperations;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @RunWith(SpringRunner.class)
 public class FeatureFlagsServiceTest {
@@ -41,31 +39,32 @@ public class FeatureFlagsServiceTest {
 	}
 
 	@Test
-	public void testGetFeatureFlag_ReturnsFeatureFlag_WhenRestOperationsReturnsHttpOk() {
+	public void testGetFeatureFlag_ReturnsFeatureFlag_WithoutIdentifier() {
 		ResponseEntity<Flag> responseEntity = new ResponseEntity<Flag>(booleanTrueFlag, HttpStatus.OK);
 		when(restOperations.getForEntity(EVALUATION_URI, Flag.class)).thenReturn(responseEntity);
 
-		Flag actual = featureFlagsService.getFlag("feature-flag");
+		Flag actual = featureFlagsService.getFlag("feature-flag", null);
 		assertEquals(booleanTrueFlag, actual);
 	}
 
 	@Test
-	public void testGetFeatureFlag_ReturnsNull_WhenRestOperationsReturnsHttpNotFound() {
-		HttpClientErrorException exception = new HttpClientErrorException(HttpStatus.NOT_FOUND);
-		when(restOperations.getForEntity(EVALUATION_URI, Flag.class)).thenThrow(exception);
+	public void testGetFeatureFlag_ReturnsFeatureFlag_WithEmptyIdentifier() {
+		ResponseEntity<Flag> responseEntity = new ResponseEntity<Flag>(booleanTrueFlag, HttpStatus.OK);
+		when(restOperations.getForEntity(EVALUATION_URI, Flag.class)).thenReturn(responseEntity);
 
-		Flag actual = featureFlagsService.getFlag("feature-flag");
-		assertEquals(null, actual);
+		Flag actual = featureFlagsService.getFlag("feature-flag", "");
+		assertEquals(booleanTrueFlag, actual);
 	}
 
 	@Test
-	public void testGetFeatureFlag_RethrowsException_WhenExceptionStatusIsDifferentFromNotFound() {
-		exceptionRule.expect(HttpStatusCodeException.class);
-		exceptionRule.expectMessage("500 INTERNAL_SERVER_ERROR");
+	public void testGetFeatureFlag_ReturnsFeatureFlag_WithIdentifier() {
+		URI serviceUri = UriComponentsBuilder.fromUri(EVALUATION_URI).queryParam("identifier", "my-identifier")
+				.build().toUri();
 
-		HttpServerErrorException exception = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
-		when(restOperations.getForEntity(EVALUATION_URI, Flag.class)).thenThrow(exception);
+		ResponseEntity<Flag> responseEntity = new ResponseEntity<Flag>(booleanTrueFlag, HttpStatus.OK);
+		when(restOperations.getForEntity(serviceUri, Flag.class)).thenReturn(responseEntity);
 
-		featureFlagsService.getFlag("feature-flag");
+		Flag actual = featureFlagsService.getFlag("feature-flag", "my-identifier");
+		assertEquals(booleanTrueFlag, actual);
 	}
 }

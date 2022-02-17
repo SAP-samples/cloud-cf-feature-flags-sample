@@ -48,24 +48,18 @@ public class FeatureFlagsService {
 	 * @return the feature flag
 	 */
 
-	public Flag getFlag(final String id) {
+	public Flag getFlag(final String id, final String identifier) {
 		// @formatter:off
-		URI url = UriComponentsBuilder
-					.fromUri(baseUri)
-					.path("/api/v2/evaluate/{id}")
-					.buildAndExpand(id).toUri();
+		UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUri(baseUri).path("/api/v2/evaluate/{id}");
+
+		if (identifier != null && identifier.length() > 0) {
+			urlBuilder.queryParam("identifier", identifier);
+		}
+
+		URI url = urlBuilder.buildAndExpand(id).toUri();
 		// @formatter:on
 
-		try {
-			ResponseEntity<Flag> responseEntity = restOperations.getForEntity(url, Flag.class);
-			return responseEntity.getBody();
-		} catch (HttpStatusCodeException e) {
-			if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-				return null;
-			}
-
-			logger.error(UNEXPECTED_STATUS_ERROR_FORMAT, e.getStatusCode());
-			throw e;
-		}
+		ResponseEntity<Flag> responseEntity = restOperations.getForEntity(url, Flag.class);
+		return responseEntity.getBody();
 	}
 }

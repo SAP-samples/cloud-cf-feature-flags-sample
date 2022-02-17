@@ -8,16 +8,17 @@
       <div class="row" style="margin-bottom: 2em">
         <div align="center" class="col-lg-12">
           <h1>Evaluation Result</h1>
-        <div th:switch="${credentialsAvailable}">
-          <div th:case="false" class="alert alert-dismissible alert-danger">
-            There is no Feature Flags service instance bound to the application. Try to create one and bind it to this application.
-          </div>
-          <div th:case="true">
-            <div th:switch="${flagAvailable}">
-              <div th:case="false" class="alert alert-dismissible alert-warning">
-                <strong>Not found!</strong>
-                Feature flag with name <strong>[[${id}]]</strong> is <strong>missing</strong>. Try to create it using the Feature Flags Service dashboard!
-              </div>
+          <div th:switch="${credentialsAvailable}">
+            <div th:case="false" class="alert alert-dismissible alert-danger">
+              There is no Feature Flags service instance bound to the application. Try to create one and bind it to this application.
+            </div>
+            <div th:case="true">
+              <div th:if="${errorStatus}" class="alert alert-dismissible alert-danger">Status [[${errorStatus}]] returned by Service.</div>
+              <div th:switch="${flagAvailable}">
+                <div th:case="false" class="alert alert-dismissible alert-warning">
+                  <strong>Not found!</strong>
+                  Feature flag with name <strong>[[${id}]]</strong> is <strong>missing</strong>. Try to create it using the Feature Flags Service dashboard!
+                </div>
               <div th:case="true" class="alert alert-dismissible alert-info">
                 Feature flag with name <strong>[[${id}]]</strong> is <strong>[[${type}]]</strong>. Variation is <strong>[[${variation}]]</strong>.
               </div>
@@ -25,9 +26,9 @@
           </div>
         </div>
         <div align="right">
-			<span class="btn-group">
-				<a id="back_button" class="btn btn-primary" href="/"><span class="glyphicon glyphicon-share-alt"></span> Go back</a>
-			</span>
+          <span class="btn-group">
+            <a id="back_button" class="btn btn-primary" href="/"><span class="glyphicon glyphicon-share-alt"></span> Go back</a>
+          </span>
         </div>
       </div>
     </div>
