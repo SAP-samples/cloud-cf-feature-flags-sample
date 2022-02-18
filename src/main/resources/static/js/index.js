@@ -1,18 +1,17 @@
-var evaluationAncor = $('#evaluation-ancor');
-var nameInput = $('#feature-flag-name-input');
-nameInput.change(function () {
-    evaluationAncor.attr('href', '/evaluate/' + $(this).val());
-});
-var identifierInput = $('#feature-flag-identifier-input');
+$(document).ready(function () {
+    var evaluationAnchor = $('#evaluation-anchor');
 
-$(document).keypress(function (event) {
-    if(event.which == 13) { // Enter key
-        event.preventDefault();
-
-        var name = nameInput.val();
-        var identifier = identifierInput.val();
+    evaluationAnchor.click(function (event) {
+        var name = $('#feature-flag-name-input').val();
+        var identifier = $('#feature-flag-identifier-input').val();
         var href = `/evaluate/${name}?identifier=${identifier}`;
-        evaluationAncor.attr('href', href)
-        evaluationAncor[0].click();
-    }
+        evaluationAnchor.attr('href', href);
+    });
+
+    $(document).keypress(function (event) {
+        if(event.which == 13) { // Enter key
+            event.preventDefault();
+            evaluationAnchor[0].click();
+        }
+    });
 });

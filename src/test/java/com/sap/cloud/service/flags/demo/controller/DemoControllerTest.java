@@ -13,18 +13,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cloud.localconfig.LocalConfigConnector;
-import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.sap.cloud.service.flags.demo.service.Flag;
 import com.sap.cloud.service.flags.demo.service.FlagType;
+import com.sap.cloud.service.flags.demo.service.EvaluationException;
 import com.sap.cloud.service.flags.demo.FeatureFlagsDemoApplication;
 import com.sap.cloud.service.flags.demo.service.FeatureFlagsService;
 
@@ -96,23 +94,16 @@ public class DemoControllerTest {
 
 	@Test
 	public void testEvaluate_EvaluatesMissingFeatureFlag() throws Exception {
-		when(featureFlagsService.getFlag("feature-flag", null)).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
+		when(featureFlagsService.getFlag("feature-flag", null)).thenReturn(null);
 		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
 				containsString("Feature flag with name <strong>feature-flag</strong> is <strong>missing</strong>")));
 	}
 
 	@Test
-	public void testEvaluate_EvaluatesFeatureFlag_WithoutRequiredIdentifier() throws Exception {
-		when(featureFlagsService.getFlag("feature-flag", null)).thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST));
+	public void testEvaluate_WhenEvaluationFails() throws Exception {
+		when(featureFlagsService.getFlag("feature-flag", null)).thenThrow(new EvaluationException("Evaluation failed"));
 		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
-				containsString("Status 400 returned by Service")));
-	}
-
-	@Test
-	public void testEvaluate_WhenUnexpectedErrorOccurs() throws Exception {
-		when(featureFlagsService.getFlag("feature-flag", null)).thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
-				containsString("Status 500 returned by Service")));
+				containsString("Evaluation failed")));
 	}
 
 	@Test

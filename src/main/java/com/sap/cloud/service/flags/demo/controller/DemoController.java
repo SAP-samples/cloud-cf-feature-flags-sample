@@ -2,14 +2,13 @@ package com.sap.cloud.service.flags.demo.controller;
 
 import java.util.Optional;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.client.HttpStatusCodeException;
 
+import com.sap.cloud.service.flags.demo.service.EvaluationException;
 import com.sap.cloud.service.flags.demo.service.FeatureFlagsService;
 import com.sap.cloud.service.flags.demo.service.Flag;
 
@@ -74,18 +73,17 @@ public class DemoController {
 		Flag flag;
 		try {
 			flag = featureFlagsServiceOptional.get().getFlag(id, identifier);
-		} catch (HttpStatusCodeException e) {
-			if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-				modelMap.addAttribute("flagAvailable", false);
-			} else {
-				modelMap.addAttribute("errorStatus", e.getStatusCode());
-			}
+		} catch (EvaluationException e) {
+			modelMap.addAttribute("backendError", e.getMessage());
 			return template;
 		}
 
-		modelMap.addAttribute("flagAvailable", true);
-		modelMap.addAttribute("type", flag.getType());
-		modelMap.addAttribute("variation", flag.getVariation());
+		boolean flagAvailable = flag != null;
+		modelMap.addAttribute("flagAvailable", flagAvailable);
+		if (flagAvailable) {
+			modelMap.addAttribute("type", flag.getType());
+			modelMap.addAttribute("variation", flag.getVariation());
+		}
 
 		return template;
 	}
