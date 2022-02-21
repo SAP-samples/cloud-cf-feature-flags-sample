@@ -13,7 +13,7 @@
               There is no Feature Flags service instance bound to the application. Try to create one and bind it to this application.
             </div>
             <div th:case="true">
-              <div th:if="${backendError}" class="alert alert-dismissible alert-danger">[[${backendError}]]</div>
+              <div th:if="${evaluationError}" class="alert alert-dismissible alert-danger">[[${evaluationError}]]</div>
               <div th:switch="${flagAvailable}">
                 <div th:case="false" class="alert alert-dismissible alert-warning">
                   <strong>Not found!</strong>

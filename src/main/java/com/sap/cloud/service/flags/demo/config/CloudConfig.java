@@ -27,7 +27,7 @@ public class CloudConfig extends AbstractCloudConfig {
 	 * Creates a {@link FeatureFlagsService} for both cloud and local
 	 * environment. If there is no Feature Flags instance bound to the
 	 * application in the cloud, then {@code null} is returned.
-	 * 
+	 *
 	 * @return instance of {@link FeatureFlagsService}
 	 */
 

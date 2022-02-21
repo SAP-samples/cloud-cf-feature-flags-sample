@@ -74,7 +74,7 @@ public class DemoController {
 		try {
 			flag = featureFlagsServiceOptional.get().getFlag(id, identifier);
 		} catch (EvaluationException e) {
-			modelMap.addAttribute("backendError", e.getMessage());
+			modelMap.addAttribute("evaluationError", e.getMessage());
 			return template;
 		}
 

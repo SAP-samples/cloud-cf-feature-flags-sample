@@ -1,52 +1,53 @@
 package com.sap.cloud.service.flags.demo.service;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
 
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import com.launchdarkly.sdk.LDValue;
+import com.launchdarkly.sdk.UserAttribute;
+import com.launchdarkly.sdk.server.LDClient;
+import com.launchdarkly.sdk.server.LDConfig;
+import com.launchdarkly.sdk.server.integrations.TestData;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.client.RestOperations;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 
 @RunWith(SpringRunner.class)
 public class FeatureFlagsServiceTest {
 
-	private static final URI BASE_URI = URI.create("https://feature-flags.cfapps.region.hana.ondemand.com");
-	private static final URI EVALUATION_URI = BASE_URI.resolve("/api/v2/evaluate/feature-flag");
-
+	private TestData testData;
 	private FeatureFlagsService featureFlagsService;
 	private Flag booleanTrueFlag;
-
-	@MockBean
-	private RestOperations restOperations;
+	private Flag booleanFalseFlag;
+	private Flag stringFlag;
 
 	@Rule
-	public ExpectedException exceptionRule = ExpectedException.none();
+	public ExpectedException exceptionRule = ExpectedException.none();;
 
 	@Before
 	public void setUp() {
-		featureFlagsService = new FeatureFlagsService(BASE_URI, restOperations);
+		testData = TestData.dataSource();
+		LDClient client = new LDClient("sdk-key", new LDConfig.Builder().dataSource(testData).build());
+		featureFlagsService = new FeatureFlagsService(client);
 		booleanTrueFlag = new Flag(FlagType.BOOLEAN, "true");
+		booleanFalseFlag = new Flag(FlagType.BOOLEAN, "false");
+		stringFlag = new Flag(FlagType.STRING, "variation-1");
+	}
+
+	@Test
+	public void testGetFeatureFlag_ReturnsNull_WhenFlagIsNotDefined() {
+		Flag actual = featureFlagsService.getFlag("feature-flag", null);
+		assertEquals(null, actual);
 	}
 
 	@Test
 	public void testGetFeatureFlag_ReturnsFeatureFlag_WithoutIdentifier() {
-		ResponseEntity<Flag> responseEntity = new ResponseEntity<Flag>(booleanTrueFlag, HttpStatus.OK);
-		when(restOperations.getForEntity(EVALUATION_URI, Flag.class)).thenReturn(responseEntity);
+		testData.update(testData.flag("feature-flag")
+			  .ifMatch(UserAttribute.ANONYMOUS)
+			  .thenReturn(true));
 
 		Flag actual = featureFlagsService.getFlag("feature-flag", null);
 		assertEquals(booleanTrueFlag, actual);
@@ -54,8 +55,9 @@ public class FeatureFlagsServiceTest {
 
 	@Test
 	public void testGetFeatureFlag_ReturnsFeatureFlag_WithEmptyIdentifier() {
-		ResponseEntity<Flag> responseEntity = new ResponseEntity<Flag>(booleanTrueFlag, HttpStatus.OK);
-		when(restOperations.getForEntity(EVALUATION_URI, Flag.class)).thenReturn(responseEntity);
+		testData.update(testData.flag("feature-flag")
+			  .ifMatch(UserAttribute.ANONYMOUS)
+			  .thenReturn(true));
 
 		Flag actual = featureFlagsService.getFlag("feature-flag", "");
 		assertEquals(booleanTrueFlag, actual);
@@ -63,43 +65,35 @@ public class FeatureFlagsServiceTest {
 
 	@Test
 	public void testGetFeatureFlag_ReturnsFeatureFlag_WithIdentifier() {
-		URI serviceUri = UriComponentsBuilder.fromUri(EVALUATION_URI).queryParam("identifier", "my-identifier")
-				.build().toUri();
-
-		ResponseEntity<Flag> responseEntity = new ResponseEntity<Flag>(booleanTrueFlag, HttpStatus.OK);
-		when(restOperations.getForEntity(serviceUri, Flag.class)).thenReturn(responseEntity);
+		testData.update(testData.flag("feature-flag")
+			  .ifMatch(UserAttribute.forName("identifier"), LDValue.of("my-identifier"))
+			  .thenReturn(false));
 
 		Flag actual = featureFlagsService.getFlag("feature-flag", "my-identifier");
+		assertEquals(booleanFalseFlag, actual);
+
+		actual = featureFlagsService.getFlag("feature-flag", "some-other-identifier");
 		assertEquals(booleanTrueFlag, actual);
 	}
 
 	@Test
-	public void testGetFeatureFlag_ReturnsNull_WhenHttpNotFound() {
-		when(restOperations.getForEntity(EVALUATION_URI, Flag.class)).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
+	public void testGetFeatureFlag_ReturnsStringFeatureFlag() {
+		testData.update(testData.flag("feature-flag")
+				.variations(LDValue.of("variation-1"), LDValue.of("variation-0"), LDValue.of("variation-2"))
+				.ifMatch(UserAttribute.ANONYMOUS)
+			  .thenReturn(1));
 
 		Flag actual = featureFlagsService.getFlag("feature-flag", null);
-		assertEquals(null, actual);
+		assertEquals(stringFlag, actual);
 	}
 
 	@Test
-	public void testGetFeatureFlag_ThrowsEvaluationException_WhenHttpBadRequest() {
+	public void testGetFeatureFlag_Throws_WhenFlagIsOfDifferentType() {
 		exceptionRule.expect(EvaluationException.class);
-		exceptionRule.expectMessage("Missing identifier");
-
-		HttpStatus status = HttpStatus.BAD_REQUEST;
-		HttpStatusCodeException exc = new HttpClientErrorException(status, status.getReasonPhrase(), "Missing identifier".getBytes(), StandardCharsets.UTF_8);
-		when(restOperations.getForEntity(EVALUATION_URI, Flag.class)).thenThrow(exc);
+		exceptionRule.expectMessage("Cannot process flag with type NUMBER");
+		testData.update(testData.flag("feature-flag").valueForAllUsers(LDValue.of(12.3)));
 
 		featureFlagsService.getFlag("feature-flag", null);
 	}
 
-	@Test
-	public void testGetFeatureFlag_ThrowsEvaluationException_WhenHttpInternalServerError() {
-		exceptionRule.expect(EvaluationException.class);
-		exceptionRule.expectMessage("Feature Flags Service returned status 500.");
-
-		when(restOperations.getForEntity(EVALUATION_URI, Flag.class)).thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
-
-		featureFlagsService.getFlag("feature-flag", null);
-	}
 }

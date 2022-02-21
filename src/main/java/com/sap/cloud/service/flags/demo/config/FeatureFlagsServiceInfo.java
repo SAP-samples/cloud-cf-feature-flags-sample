@@ -1,24 +1,26 @@
 package com.sap.cloud.service.flags.demo.config;
 
 import org.springframework.cloud.service.ServiceInfo;
-import org.springframework.cloud.service.UriBasedServiceInfo;
+import org.springframework.cloud.service.BaseServiceInfo;
 import org.springframework.util.Assert;
 
 /**
  * Represents a {@link ServiceInfo} for the Feature Flags service.
  */
 
-public class FeatureFlagsServiceInfo extends UriBasedServiceInfo {
+public class FeatureFlagsServiceInfo extends BaseServiceInfo {
 
 	public static final String HTTPS_SCHEME = "https";
 
-	public FeatureFlagsServiceInfo(String id, String host, int port, String username, String password, String path) {
-		super(id, HTTPS_SCHEME, host, port, username, password, path);
-		Assert.notNull(username);
-		Assert.notNull(password);
+	private String sdkKey;
+
+	public FeatureFlagsServiceInfo(String id, String sdkKey) {
+		super(id);
+		Assert.notNull(sdkKey);
+		this.sdkKey = sdkKey;
 	}
 
-	public FeatureFlagsServiceInfo(String id, String uriString) {
-		super(id, uriString);
+	public String getSdkKey() {
+		return this.sdkKey;
 	}
 }
