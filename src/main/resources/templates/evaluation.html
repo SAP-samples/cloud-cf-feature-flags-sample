@@ -19,8 +19,16 @@
                   <strong>Not found!</strong>
                   Feature flag with name <strong>[[${id}]]</strong> is <strong>missing</strong>. Try to create it using the Feature Flags Service dashboard!
                 </div>
-              <div th:case="true" class="alert alert-dismissible alert-info">
-                Feature flag with name <strong>[[${id}]]</strong> is <strong>[[${type}]]</strong>. Variation is <strong>[[${variation}]]</strong>.
+              <div th:case="true">
+                <div>
+                  Feature flag with name <strong>[[${id}]]</strong>.
+                </div>
+                <div>
+                  Type is <strong>[[${type}]]</strong>.
+                </div>
+                <div>
+                  Variation is <strong>[[${variation}]]</strong>.
+                </div>
               </div>
             </div>
           </div>
