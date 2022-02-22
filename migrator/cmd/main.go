@@ -1,34 +1,33 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
-	"os"
-	"strings"
+	"strconv"
 	"time"
 
-	ldapi "github.com/launchdarkly/api-client-go"
+	"github.com/SAP-samples/cloud-cf-feature-flags-sample/pkg/launchdarkly"
+	"github.com/SAP-samples/cloud-cf-feature-flags-sample/pkg/sap"
 )
 
 const (
-	apiTokenParamName     = "api-token"
-	projectKeyParamName   = "project-key"
-	jsonFilePathParamName = "flags-file"
+	apiKeyParamName                    = "api-key"
+	projectKeyParamName                = "project-key"
+	sleepAfterRequestParamName         = "sleep-after-request"
+	sleepAfterTooManyRequestsParamName = "sleep-after-too-many-requests"
+	maxRetriesParamName                = "max-retries"
+	jsonFilePathParamName              = "flags-file"
 )
 
-type parameters struct {
-	APIToken     string
-	ProjectKey   string
+type Parameters struct {
+	launchdarkly.ClientParams
 	JSONFilePath string
 }
 
-func (p parameters) validate() {
-	if p.APIToken == "" {
-		log.Fatalf("%s parameter not provided\n", apiTokenParamName)
+func (p Parameters) validate() {
+	if p.APIKey == "" {
+		log.Fatalf("%s parameter not provided\n", apiKeyParamName)
 	}
 	if p.ProjectKey == "" {
 		log.Fatalf("%s parameter not provided\n", projectKeyParamName)
@@ -38,43 +37,28 @@ func (p parameters) validate() {
 	}
 }
 
-func getParams() parameters {
-	params := parameters{}
-	flag.StringVar(&params.APIToken, apiTokenParamName, "", "LaunchDarkly API token")
+func getParams() Parameters {
+	params := Parameters{}
+	flag.StringVar(&params.APIKey, apiKeyParamName, "", "LaunchDarkly API key")
 	flag.StringVar(&params.ProjectKey, projectKeyParamName, "", "LaunchDarkly Project key")
-	flag.StringVar(&params.JSONFilePath, jsonFilePathParamName, "", "Path to json file exported from Feature Flags dashboard")
+	flag.StringVar(&params.JSONFilePath, jsonFilePathParamName, "",
+		"Path to json file exported from Feature Flags dashboard")
+	flag.DurationVar(&params.SleepAfterRequest, sleepAfterRequestParamName, 1*time.Second,
+		"How much time to wait between subsequent requests to LaunchDarkly (default: 1s)")
+	flag.DurationVar(&params.SleepAfterTooManyRequests, sleepAfterTooManyRequestsParamName, 2*time.Second,
+		"How much time to wait after LaunchDarkly has returned 429 Too Many Requests status (default: 2s)")
+	flag.IntVar(&params.MaxRetries, maxRetriesParamName, 10,
+		"How many times to retry a request that has received a 429 Too Many Requests status (default: 10)")
 	flag.Parse()
 	params.validate()
 	return params
 }
 
-func checkError(err error) {
-	if err != nil {
-		log.Fatalln(err)
-	}
-}
-
-func ldApiTokenContext(apiToken string) context.Context {
-	return context.WithValue(context.Background(), ldapi.ContextAPIKey, ldapi.APIKey{
-		Key: apiToken,
-	})
-}
-
-func readFlags(jsonFilePath string) Flags {
-	fileContent, err := os.ReadFile(jsonFilePath)
-	checkError(err)
-	var flags Flags
-	err = json.Unmarshal(fileContent, &flags)
-	checkError(err)
-	log.Printf("%d flags read from %s", len(flags.Flags), jsonFilePath)
-	return flags
-}
-
 func main() {
 	params := getParams()
-	flags := readFlags(params.JSONFilePath)
-	//fmt.Println(flags)
-	createFlagsInLaunchDarkly(params, flags)
+	sapFlags := sap.ReadFlags(params.JSONFilePath)
+	launchDarklyFlags := convertFlags(sapFlags)
+	createFlagsInLaunchDarkly(params, launchDarklyFlags)
 	//ctx := ldApiTokenContext(params.APIToken)
 	//client := ldapi.NewAPIClient(ldapi.NewConfiguration())
 	//
@@ -115,117 +99,68 @@ func main() {
 	//fmt.Println("ff:", ff)
 }
 
-func handleSwaggerError(swaggerError ldapi.GenericSwaggerError) error {
-	if strings.Contains(swaggerError.Error(), http.StatusText(http.StatusTooManyRequests)) {
-		log.Println("Sleeping for 2 seconds due to API rate limit")
-		time.Sleep(time.Second * 2)
-		err := createFlagInLaunchDarkly(ctx, client, params.ProjectKey, flag)
-	} else {
-		failedFlags[flag.ID] = fmt.Errorf("error during creation of flag %s - %s: %s", flag.ID,
-			swaggerError.Error(), string(swaggerError.Body()))
-	}
+func convertFlags(sapFlags sap.Flags) []launchdarkly.Flag {
+	lauchdarklyFlags := make([]launchdarkly.Flag, 0, len(sapFlags.Flags))
 
-}
-
-func createFlagsInLaunchDarkly(params parameters, flags Flags) {
-	ctx, client := createClient(params)
-	failedFlags := make(map[string]error)
-	for _, flag := range flags.Flags {
-		if err := createFlagInLaunchDarkly(ctx, client, params.ProjectKey, flag); err != nil {
-			swaggerError, ok := err.(ldapi.GenericSwaggerError)
-			if ok {
-				err = handleSwaggerError(swaggerError, flag.ID)
-			}
-			if err != nil {
-				failedFlags[flag.ID] = err
-			}
-		}
-	}
-	allFlagsCount := len(flags.Flags)
-	log.Printf("%d/%d flags created successfully\n", allFlagsCount-len(failedFlags), allFlagsCount)
-	for flagID, err := range failedFlags {
-		log.Printf("Flag %s could not be created. Reason: %s\n", flagID, err.Error())
-	}
-}
-
-func createClient(params parameters) (context.Context, *ldapi.APIClient) {
-	return ldApiTokenContext(params.APIToken), ldapi.NewAPIClient(ldapi.NewConfiguration())
-}
-
-var (
-	VariationFalse interface{} = false
-	VariationTrue  interface{} = true
-)
-
-func createFlagInLaunchDarkly(ctx context.Context, client *ldapi.APIClient, projectKey string, flag Flag) error {
-	//valOneVal := "variation 1"
-	//valTwoVal := "variation 2"
-	//var valOne interface{} = valOneVal //map[string]interface{}{"one": valOneVal}
-	//var valTwo interface{} = valTwoVal //map[string]interface{}{"one": valOneVal}
-
-	ldVariations := make([]ldapi.Variation, len(flag.Variations))
-
-	if flag.VariationType == "BOOLEAN" {
-		ldVariations = append(ldVariations, ldapi.Variation{
-			Value: &VariationFalse,
-		}, ldapi.Variation{
-			Value: &VariationTrue,
+	for _, sapFlag := range sapFlags.Flags {
+		lauchdarklyFlags = append(lauchdarklyFlags, launchdarkly.Flag{
+			Name:        sapFlag.ID,
+			Kind:        resolveKind(sapFlag.VariationType),
+			Key:         sapFlag.ID,
+			Description: sapFlag.Description,
+			Temporary:   false,
+			Variations:  resolveVariations(sapFlag),
+			Defaults: launchdarkly.DefaultVariation{
+				OffVariation: sapFlag.OffVariationIndex,
+				OnVariation:  sapFlag.DefaultVariationIndex,
+			},
 		})
-	} else {
-		for _, variation := range flag.Variations {
-			var v interface{} = variation
-			ldVariations = append(ldVariations, ldapi.Variation{
-				Value: &v,
-			})
+	}
+
+	return lauchdarklyFlags
+}
+
+func resolveKind(sapVariationType string) string {
+	if sapVariationType == "BOOLEAN" {
+		return "boolean"
+	}
+	if sapVariationType == "STRING" {
+		return "string"
+	}
+	panic(fmt.Sprintf("found unexpected variation type %s", sapVariationType))
+}
+
+func resolveVariations(sapFlag sap.Flag) []launchdarkly.Variation {
+	variations := make([]launchdarkly.Variation, 0, len(sapFlag.Variations))
+
+	for _, sapVariation := range sapFlag.Variations {
+		if sapFlag.VariationType == "BOOLEAN" {
+			variationValue, err := strconv.ParseBool(sapVariation)
+			if err != nil {
+				panic(fmt.Sprintf("found unexpected boolean variation value %s for flag %s", sapVariation, sapFlag.ID))
+			}
+			variations = append(variations, launchdarkly.Variation{Value: variationValue})
+		} else {
+			variations = append(variations, launchdarkly.Variation{Value: sapVariation})
 		}
 	}
 
-	ldFlag := ldapi.FeatureFlagBody{
-		Name:                   flag.ID,
-		Key:                    flag.ID,
-		Description:            flag.Description,
-		Variations:             ldVariations,
-		Temporary:              false,
-		Tags:                   nil,
-		IncludeInSnippet:       false,
-		ClientSideAvailability: nil,
-		Defaults: &ldapi.Defaults{
-			OnVariation:  flag.DefaultVariationIndex,
-			OffVariation: flag.OffVariationIndex,
-		},
+	return variations
+}
+
+func createFlagsInLaunchDarkly(params Parameters, flags []launchdarkly.Flag) {
+	client := launchdarkly.NewClient(params.ClientParams)
+	failedFlags := make(map[string]error)
+
+	for _, flag := range flags {
+		if err := client.CreateFlag(flag); err != nil {
+			failedFlags[flag.Key] = err
+		}
 	}
-	_, _, err := client.FeatureFlagsApi.PostFeatureFlag(ctx, projectKey, ldFlag, nil)
-	return err
-}
 
-type ldError struct {
-	Status int
-	Error  error
-}
-
-type Flags struct {
-	Flags []Flag `json:"flags"`
-}
-
-type Flag struct {
-	ID                    string            `json:"id"`
-	Description           string            `json:"description"`
-	DirectShipments       []DirectShipments `json:"directShipments"`
-	WeightedChoices       []WeightedChoices `json:"weightedChoices"`
-	VariationType         string            `json:"variationType"`
-	Variations            []string          `json:"variations"`
-	OffVariationIndex     int32             `json:"offVariationIndex"`
-	DefaultVariationIndex int32             `json:"defaultVariationIndex"`
-	Enabled               bool              `json:"enabled"`
-}
-
-type DirectShipments struct {
-	ID             int      `json:"id"`
-	VariationIndex int      `json:"variationIndex"`
-	Receivers      []string `json:"receivers"`
-}
-
-type WeightedChoices struct {
-	VariationIndex int `json:"variationIndex"`
-	Weight         int `json:"weight"`
+	allFlagsCount := len(flags)
+	log.Printf("%d/%d flags created successfully\n", allFlagsCount-len(failedFlags), allFlagsCount)
+	for _, err := range failedFlags {
+		log.Println(err.Error())
+	}
 }
