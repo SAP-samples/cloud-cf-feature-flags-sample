@@ -10,9 +10,15 @@ type Flag struct {
 	Temporary   bool             `json:"temporary"`
 	Variations  []Variation      `json:"variations"`
 	Defaults    DefaultVariation `json:"defaults"`
+
+	Rules Rules `json:"-"`
+}
+
+type Rules struct {
 }
 
 type Variation struct {
+	ID    string      `json:"_id,omitempty"`
 	Value interface{} `json:"value"`
 }
 

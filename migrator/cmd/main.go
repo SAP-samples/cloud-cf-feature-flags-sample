@@ -153,8 +153,10 @@ func createFlagsInLaunchDarkly(params Parameters, flags []launchdarkly.Flag) {
 	failedFlags := make(map[string]error)
 
 	for _, flag := range flags {
-		if err := client.CreateFlag(flag); err != nil {
+		if err := client.CreateFlag(&flag); err != nil {
 			failedFlags[flag.Key] = err
+		} else {
+			client.SetFlagRules(flag)
 		}
 	}
 
@@ -164,3 +166,51 @@ func createFlagsInLaunchDarkly(params Parameters, flags []launchdarkly.Flag) {
 		log.Println(err.Error())
 	}
 }
+
+/*
+{
+    "environmentKey": "production",
+    "instructions": [
+        {
+            "kind": "turnFlagOn"
+        },
+        {
+            "kind": "replaceRules",
+            "rules": [
+                {
+                    "variationId": "0adf85c4-3334-4e0e-94cd-e26332565f29",
+                    "clauses": [
+                        {
+                            "attribute": "identifier",
+                            "op": "in",
+                            "values": [
+                                "t1"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "variationId": "c7bbbcbc-5efe-463c-9a36-121c88252e3a",
+                    "clauses": [
+                        {
+                            "attribute": "identifier",
+                            "op": "in",
+                            "values": [
+                                "t2"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "kind": "updateFallthroughVariationOrRollout",
+            "rolloutWeights": {
+                "0adf85c4-3334-4e0e-94cd-e26332565f29": 50000,
+                "c7bbbcbc-5efe-463c-9a36-121c88252e3a": 50000
+            },
+            "rolloutBucketBy": null
+        }
+    ]
+}
+*/

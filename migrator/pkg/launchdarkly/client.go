@@ -38,7 +38,61 @@ type httpError struct {
 	message string
 }
 
-func (c Client) CreateFlag(flag Flag) error {
+func (c Client) SetFlagRules(flag *Flag) error {
+	var err *httpError
+	for i := 0; i <= c.params.MaxRetries; i++ {
+		err = c.patchFeatureFlag(flag)
+		if err == nil {
+			log.Printf("Flag rules %s created successfully\n", flag.Key)
+			return nil
+		}
+
+		time.Sleep(c.params.SleepAfterRequest)
+
+		shouldRetry := err.status == http.StatusTooManyRequests
+
+		if !shouldRetry {
+			break
+		}
+
+		sleepDuration := c.params.SleepAfterTooManyRequests
+		log.Printf("Sleeping for %s due to API rate limit\n", sleepDuration)
+		time.Sleep(sleepDuration)
+	}
+
+	return errors.New(err.message)
+}
+
+func (c Client) patchFeatureFlag(flag *Flag) *httpError {
+	content, err := json.Marshal(flag.Rules)
+	errors.Check(err)
+
+	url := fmt.Sprintf("%s/api/v2/flags/%s/%s", BaseURL, c.params.ProjectKey, flag.Key)
+	requestBodyBytes := bytes.NewReader(content)
+
+	req, err := http.NewRequest(http.MethodPatch, url, requestBodyBytes)
+	errors.Check(err)
+	req.Header.Set("Content-Type", "application/json; domain-model=launchdarkly.semanticpatch")
+	req.Header.Set("Authorization", c.params.APIKey)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return &httpError{status: -1, message: err.Error()}
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		respBodyContent, _ := io.ReadAll(resp.Body)
+		return &httpError{
+			status:  resp.StatusCode,
+			message: fmt.Sprintf("could not create flag %s, status: %d, %s", flag.Key, resp.StatusCode, string(respBodyContent)),
+		}
+	}
+
+	return nil
+}
+
+func (c Client) CreateFlag(flag *Flag) error {
 	var err *httpError
 	for i := 0; i <= c.params.MaxRetries; i++ {
 		err = c.postFeatureFlag(flag)
@@ -63,7 +117,7 @@ func (c Client) CreateFlag(flag Flag) error {
 	return errors.New(err.message)
 }
 
-func (c Client) postFeatureFlag(flag Flag) *httpError {
+func (c Client) postFeatureFlag(flag *Flag) *httpError {
 	content, err := json.Marshal(flag)
 	errors.Check(err)
 
@@ -84,6 +138,13 @@ func (c Client) postFeatureFlag(flag Flag) *httpError {
 		return &httpError{
 			status:  resp.StatusCode,
 			message: fmt.Sprintf("could not create flag %s, status: %d, %s", flag.Key, resp.StatusCode, string(respBodyContent)),
+		}
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(flag); err != nil {
+		return &httpError{
+			status:  -1,
+			message: fmt.Sprintf("could not parse flag %s: %s", flag.Key, err.Error()),
 		}
 	}
 
