@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/SAP-samples/cloud-cf-feature-flags-sample/pkg/errors"
@@ -32,7 +33,9 @@ func NewClient(params ClientParams) *Client {
 		params:     params,
 		httpClient: http.DefaultClient,
 	}
-	client.initEnvironments()
+	client.loadEnvironments()
+	log.Printf("[INFO] Flags will be created in the following environments: %s\n",
+		strings.Join(client.environments, ", "))
 	return client
 }
 
@@ -41,15 +44,15 @@ type httpError struct {
 	message string
 }
 
-type Project struct {
-	Environments []Environment `json:"environments"`
+type project struct {
+	Environments []environment `json:"environments"`
 }
 
-type Environment struct {
+type environment struct {
 	Key string `json:"key"`
 }
 
-func (c *Client) initEnvironments() {
+func (c *Client) loadEnvironments() {
 	url := fmt.Sprintf("%s/api/v2/projects/%s", BaseURL, c.params.ProjectKey)
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -58,10 +61,12 @@ func (c *Client) initEnvironments() {
 
 	resp, err := c.httpClient.Do(req)
 	errors.Check(err)
+	defer resp.Body.Close()
 
-	project := Project{}
+	project := project{}
 	err = json.NewDecoder(resp.Body).Decode(&project)
 	errors.Check(err)
+
 	envKeys := make([]string, 0, len(project.Environments))
 	for _, env := range project.Environments {
 		envKeys = append(envKeys, env.Key)
@@ -69,36 +74,103 @@ func (c *Client) initEnvironments() {
 	c.environments = envKeys
 }
 
-func (c *Client) SetFlagRules(flag *Flag) error {
-	var err *httpError
-	for _, environment := range c.environments {
-		for i := 0; i <= c.params.MaxRetries; i++ {
-			err = c.patchFeatureFlag(flag, environment)
-			if err == nil {
-				log.Printf("Flag rules %s created successfully\n", flag.Key)
-				break
-			}
-
-			time.Sleep(c.params.SleepAfterRequest)
-
-			shouldRetry := err.status == http.StatusTooManyRequests
-
-			if !shouldRetry {
-				break
-			}
-
-			sleepDuration := c.params.SleepAfterTooManyRequests
-			log.Printf("Sleeping for %s due to API rate limit\n", sleepDuration)
-			time.Sleep(sleepDuration)
+func (c *Client) withRetry(action func() *httpError) {
+	for i := 0; i <= c.params.MaxRetries; i++ {
+		err := action()
+		if err == nil {
+			return
 		}
-		if err != nil {
-			break
+
+		time.Sleep(c.params.SleepAfterRequest)
+
+		shouldRetry := err.status == http.StatusTooManyRequests
+
+		if !shouldRetry {
+			return
+		}
+
+		sleepDuration := c.params.SleepAfterTooManyRequests
+		log.Printf("[INFO] Sleeping for %s due to API rate limit\n", sleepDuration)
+		time.Sleep(sleepDuration)
+	}
+}
+
+func (c *Client) CreateFlag(flag Flag) (*Flag, error) {
+	var err *httpError
+	var createdFlag *Flag
+
+	c.withRetry(func() *httpError {
+		createdFlag, err = c.postFeatureFlag(flag)
+		return err
+	})
+
+	if err == nil {
+		log.Printf("[INFO] Flag %s created successfully\n", flag.Key)
+		return createdFlag, nil
+	}
+
+	return nil, errors.New(err.message)
+}
+
+func (c *Client) postFeatureFlag(flag Flag) (*Flag, *httpError) {
+	content, err := json.Marshal(flag)
+	errors.Check(err)
+
+	url := fmt.Sprintf("%s/api/v2/flags/%s", BaseURL, c.params.ProjectKey)
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(content))
+	errors.Check(err)
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", c.params.APIKey)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, &httpError{status: -1, message: err.Error()}
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusCreated {
+		respBodyContent, _ := io.ReadAll(resp.Body)
+		return nil, &httpError{
+			status:  resp.StatusCode,
+			message: fmt.Sprintf("could not create flag %s, status: %d, %s", flag.Key, resp.StatusCode, string(respBodyContent)),
 		}
 	}
-	if err != nil {
-		return errors.New(err.message)
+
+	var newlyCreatedFlag Flag
+	if err := json.NewDecoder(resp.Body).Decode(&newlyCreatedFlag); err != nil {
+		return nil, &httpError{
+			status:  -1,
+			message: fmt.Sprintf("could not parse flag %s: %s", flag.Key, err.Error()),
+		}
+	}
+
+	return &newlyCreatedFlag, nil
+}
+
+func (c *Client) UpdateFlagRules(flag *Flag) error {
+	for _, environment := range c.environments {
+		if err := c.updateFlagInEnvironment(flag, environment); err != nil {
+			return errors.New(err.message)
+		}
 	}
 	return nil
+}
+
+func (c *Client) updateFlagInEnvironment(flag *Flag, environment string) *httpError {
+	var err *httpError
+
+	c.withRetry(func() *httpError {
+		err = c.patchFeatureFlag(flag, environment)
+		return err
+	})
+
+	if err == nil {
+		log.Printf("[INFO] Flag rules for %s created successfully in environment %s\n", flag.Key, environment)
+		return nil
+	}
+
+	return err
 }
 
 type SemanticPatchBody struct {
@@ -132,65 +204,6 @@ func (c *Client) patchFeatureFlag(flag *Flag, environment string) *httpError {
 		return &httpError{
 			status:  resp.StatusCode,
 			message: fmt.Sprintf("could not create flag %s, status: %d, %s", flag.Key, resp.StatusCode, string(respBodyContent)),
-		}
-	}
-
-	return nil
-}
-
-func (c *Client) CreateFlag(flag *Flag) error {
-	var err *httpError
-	for i := 0; i <= c.params.MaxRetries; i++ {
-		err = c.postFeatureFlag(flag)
-		if err == nil {
-			log.Printf("Flag %s created successfully\n", flag.Key)
-			return nil
-		}
-
-		time.Sleep(c.params.SleepAfterRequest)
-
-		shouldRetry := err.status == http.StatusTooManyRequests
-
-		if !shouldRetry {
-			break
-		}
-
-		sleepDuration := c.params.SleepAfterTooManyRequests
-		log.Printf("Sleeping for %s due to API rate limit\n", sleepDuration)
-		time.Sleep(sleepDuration)
-	}
-
-	return errors.New(err.message)
-}
-
-func (c *Client) postFeatureFlag(flag *Flag) *httpError {
-	content, err := json.Marshal(flag)
-	errors.Check(err)
-
-	url := fmt.Sprintf("%s/api/v2/flags/%s", BaseURL, c.params.ProjectKey)
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(content))
-	errors.Check(err)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", c.params.APIKey)
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return &httpError{status: -1, message: err.Error()}
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusCreated {
-		respBodyContent, _ := io.ReadAll(resp.Body)
-		return &httpError{
-			status:  resp.StatusCode,
-			message: fmt.Sprintf("could not create flag %s, status: %d, %s", flag.Key, resp.StatusCode, string(respBodyContent)),
-		}
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(flag); err != nil {
-		return &httpError{
-			status:  -1,
-			message: fmt.Sprintf("could not parse flag %s: %s", flag.Key, err.Error()),
 		}
 	}
 

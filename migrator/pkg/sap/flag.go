@@ -6,6 +6,12 @@ import (
 	"os"
 
 	"github.com/SAP-samples/cloud-cf-feature-flags-sample/pkg/errors"
+	"github.com/SAP-samples/cloud-cf-feature-flags-sample/pkg/parameters"
+)
+
+const (
+	FlagTypeBoolean = "BOOLEAN"
+	FlagTypeString  = "STRING"
 )
 
 type Flags struct {
@@ -41,14 +47,15 @@ type WeightedChoices struct {
 	Weight         int `json:"weight"`
 }
 
-func ReadFlags(jsonFilePath string) Flags {
-	fileContent, err := os.ReadFile(jsonFilePath)
+func ReadFlags() Flags {
+	params := parameters.Get()
+	fileContent, err := os.ReadFile(params.JSONFilePath)
 	errors.Check(err)
 
 	var flags Flags
 	err = json.Unmarshal(fileContent, &flags)
 	errors.Check(err)
-	log.Printf("%d flags read from %s", len(flags.Flags), jsonFilePath)
+	log.Printf("[INFO] %d flags read from %s", len(flags.Flags), params.JSONFilePath)
 
 	return flags
 }

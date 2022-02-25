@@ -20,6 +20,10 @@ type Flag struct {
 	Targets Targets `json:"-"`
 }
 
+func (f *Flag) GetVariationID(index int) string {
+	return f.Variations[index].ID
+}
+
 type Clause struct {
 	Attribute string   `json:"attribute"`
 	Op        string   `json:"op"`
