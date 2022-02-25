@@ -11,10 +11,30 @@ type Flag struct {
 	Variations  []Variation      `json:"variations"`
 	Defaults    DefaultVariation `json:"defaults"`
 
-	Rules Rules `json:"-"`
+	Targets Targets `json:"-"`
 }
 
-type Rules struct {
+type Clause struct {
+	Attribute string   `json:"attribute"`
+	Op        string   `json:"op"`
+	Values    []string `json:"values"`
+}
+
+type Rule struct {
+	VariationID string   `json:"variationId"`
+	Clauses     []Clause `json:"clauses"`
+}
+
+type Instruction struct {
+	Kind           string         `json:"kind"`
+	Rules          []Rule         `json:"rules,omitempty"`
+	RolloutWeights RolloutWeights `json:"rolloutWeights,omitempty"`
+}
+
+type RolloutWeights map[string]int
+
+type Targets struct {
+	Instructions []Instruction `json:"instructions"`
 }
 
 type Variation struct {

@@ -57,8 +57,7 @@ func getParams() Parameters {
 func main() {
 	params := getParams()
 	sapFlags := sap.ReadFlags(params.JSONFilePath)
-	launchDarklyFlags := convertFlags(sapFlags)
-	createFlagsInLaunchDarkly(params, launchDarklyFlags)
+	createFlagsInLaunchDarkly(params, sapFlags.Flags)
 	//ctx := ldApiTokenContext(params.APIToken)
 	//client := ldapi.NewAPIClient(ldapi.NewConfiguration())
 	//
@@ -99,25 +98,67 @@ func main() {
 	//fmt.Println("ff:", ff)
 }
 
-func convertFlags(sapFlags sap.Flags) []launchdarkly.Flag {
-	lauchdarklyFlags := make([]launchdarkly.Flag, 0, len(sapFlags.Flags))
+func setLDTargets(sapFlag sap.Flag, ldFlag *launchdarkly.Flag) {
+	// Set Flag enabled/disabled
+	var turnFlagInstruction string
+	if sapFlag.Enabled {
+		turnFlagInstruction = "turnFlagOn"
+	} else {
+		turnFlagInstruction = "turnFlagOff"
+	}
+	ldFlag.Targets.Instructions = append(ldFlag.Targets.Instructions, launchdarkly.Instruction{
+		Kind: turnFlagInstruction,
+	})
 
-	for _, sapFlag := range sapFlags.Flags {
-		lauchdarklyFlags = append(lauchdarklyFlags, launchdarkly.Flag{
-			Name:        sapFlag.ID,
-			Kind:        resolveKind(sapFlag.VariationType),
-			Key:         sapFlag.ID,
-			Description: sapFlag.Description,
-			Temporary:   false,
-			Variations:  resolveVariations(sapFlag),
-			Defaults: launchdarkly.DefaultVariation{
-				OffVariation: sapFlag.OffVariationIndex,
-				OnVariation:  sapFlag.DefaultVariationIndex,
-			},
-		})
+	// Set Flag rules
+	if len(sapFlag.DirectShipments) > 0 {
+		rulesInstruction := launchdarkly.Instruction{
+			Kind:  "replaceRules",
+			Rules: make([]launchdarkly.Rule, 0, len(sapFlag.DirectShipments)),
+		}
+
+		for _, directShipment := range sapFlag.DirectShipments {
+			rulesInstruction.Rules = append(rulesInstruction.Rules, launchdarkly.Rule{
+				VariationID: ldFlag.Variations[directShipment.VariationIndex].ID,
+				Clauses: []launchdarkly.Clause{
+					{
+						Attribute: "identifier",
+						Op:        "in",
+						Values:    directShipment.Receivers,
+					},
+				},
+			})
+		}
+		ldFlag.Targets.Instructions = append(ldFlag.Targets.Instructions, rulesInstruction)
 	}
 
-	return lauchdarklyFlags
+	// Set Flag weights
+	if len(sapFlag.WeightedChoices) > 0 {
+		weightInstruction := launchdarkly.Instruction{
+			Kind:           "updateFallthroughVariationOrRollout",
+			RolloutWeights: map[string]int{},
+		}
+		for _, choice := range sapFlag.WeightedChoices {
+			variationID := ldFlag.Variations[choice.VariationIndex].ID
+			weightInstruction.RolloutWeights[variationID] = choice.Weight * 100
+		}
+		ldFlag.Targets.Instructions = append(ldFlag.Targets.Instructions, weightInstruction)
+	}
+}
+
+func convertFlag(sapFlag sap.Flag) launchdarkly.Flag {
+	return launchdarkly.Flag{
+		Name:        sapFlag.ID,
+		Kind:        resolveKind(sapFlag.VariationType),
+		Key:         sapFlag.ID,
+		Description: sapFlag.Description,
+		Temporary:   false,
+		Variations:  resolveVariations(sapFlag),
+		Defaults: launchdarkly.DefaultVariation{
+			OffVariation: sapFlag.OffVariationIndex,
+			OnVariation:  sapFlag.DefaultVariationIndex,
+		},
+	}
 }
 
 func resolveKind(sapVariationType string) string {
@@ -148,15 +189,20 @@ func resolveVariations(sapFlag sap.Flag) []launchdarkly.Variation {
 	return variations
 }
 
-func createFlagsInLaunchDarkly(params Parameters, flags []launchdarkly.Flag) {
+func createFlagsInLaunchDarkly(params Parameters, flags []sap.Flag) {
 	client := launchdarkly.NewClient(params.ClientParams)
 	failedFlags := make(map[string]error)
 
-	for _, flag := range flags {
-		if err := client.CreateFlag(&flag); err != nil {
-			failedFlags[flag.Key] = err
+	for _, sapFlag := range flags {
+		ldFlag := convertFlag(sapFlag)
+		if err := client.CreateFlag(&ldFlag); err != nil {
+			failedFlags[ldFlag.Key] = err
 		} else {
-			client.SetFlagRules(flag)
+			setLDTargets(sapFlag, &ldFlag)
+			err = client.SetFlagRules(&ldFlag)
+			if err != nil {
+				failedFlags[ldFlag.Key] = err
+			}
 		}
 	}
 
