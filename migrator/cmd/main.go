@@ -58,62 +58,30 @@ func main() {
 	params := getParams()
 	sapFlags := sap.ReadFlags(params.JSONFilePath)
 	createFlagsInLaunchDarkly(params, sapFlags.Flags)
-	//ctx := ldApiTokenContext(params.APIToken)
-	//client := ldapi.NewAPIClient(ldapi.NewConfiguration())
-	//
-	//valOneVal := "variation 1"
-	//valTwoVal := "variation 2"
-	//var valOne interface{} = valOneVal //map[string]interface{}{"one": valOneVal}
-	//var valTwo interface{} = valTwoVal //map[string]interface{}{"one": valOneVal}
-	//
-	//flag := ldapi.FeatureFlagBody{
-	//	Name:        "test-flag-s3",
-	//	Key:         "test-flag-s3-key",
-	//	Description: "test desc",
-	//	Variations: []ldapi.Variation{{
-	//		Id:          "id1",
-	//		Name:        "variation 1",
-	//		Description: "description 1",
-	//		Value:       &valOne,
-	//	}, {
-	//		Id:          "id2",
-	//		Name:        "variation 2",
-	//		Description: "description 2",
-	//		Value:       &valTwo,
-	//	}},
-	//	Temporary:              false,
-	//	Tags:                   nil,
-	//	IncludeInSnippet:       false,
-	//	ClientSideAvailability: nil,
-	//	Defaults: &ldapi.Defaults{
-	//		OnVariation:  0,
-	//		OffVariation: 1,
-	//	},
-	//}
-	//ff, _, err := client.FeatureFlagsApi.PostFeatureFlag(ctx, params.ProjectKey, flag, nil)
-	//checkError(err)
-	////body, err := io.ReadAll(resp.Body)
-	////checkError(err)
-	////fmt.Println("body:", string(body))
-	//fmt.Println("ff:", ff)
 }
 
 func setLDTargets(sapFlag sap.Flag, ldFlag *launchdarkly.Flag) {
 	// Set Flag enabled/disabled
 	var turnFlagInstruction string
-	if sapFlag.Enabled {
-		turnFlagInstruction = "turnFlagOn"
+	if sapFlag.Enabled || sapFlag.ReleaseDetails != nil {
+		turnFlagInstruction = launchdarkly.TurnFlagOnInstructionKind
 	} else {
-		turnFlagInstruction = "turnFlagOff"
+		turnFlagInstruction = launchdarkly.TurnFlagOffInstructionKind
 	}
 	ldFlag.Targets.Instructions = append(ldFlag.Targets.Instructions, launchdarkly.Instruction{
 		Kind: turnFlagInstruction,
 	})
+	if sapFlag.ReleaseDetails != nil {
+		if sapFlag.ReleaseDetails.CurrentPercentage != 100 {
+			log.Printf("Flag %s is in process of release. Setting flag to released\n", sapFlag.ID)
+		}
+		return
+	}
 
 	// Set Flag rules
 	if len(sapFlag.DirectShipments) > 0 {
 		rulesInstruction := launchdarkly.Instruction{
-			Kind:  "replaceRules",
+			Kind:  launchdarkly.ReplaceRulesInstructionKind,
 			Rules: make([]launchdarkly.Rule, 0, len(sapFlag.DirectShipments)),
 		}
 
@@ -131,22 +99,41 @@ func setLDTargets(sapFlag sap.Flag, ldFlag *launchdarkly.Flag) {
 		}
 		ldFlag.Targets.Instructions = append(ldFlag.Targets.Instructions, rulesInstruction)
 	}
-
 	// Set Flag weights
 	if len(sapFlag.WeightedChoices) > 0 {
 		weightInstruction := launchdarkly.Instruction{
-			Kind:           "updateFallthroughVariationOrRollout",
+			Kind:           launchdarkly.WeightsInstructionKind,
 			RolloutWeights: map[string]int{},
 		}
+		sum := 0
 		for _, choice := range sapFlag.WeightedChoices {
 			variationID := ldFlag.Variations[choice.VariationIndex].ID
-			weightInstruction.RolloutWeights[variationID] = choice.Weight * 100
+			weightInstruction.RolloutWeights[variationID] = choice.Weight * 1000
+			sum += choice.Weight
+		}
+		if sum != 100000 {
+			var defaultVariationID string
+			if sapFlag.VariationType == "BOOLEAN" {
+				defaultVariationID = ldFlag.Variations[1].ID // Set default to the "true" variation which is the second
+			} else {
+				defaultVariationID = ldFlag.Variations[ldFlag.Defaults.OnVariation].ID
+			}
+			weightInstruction.RolloutWeights[defaultVariationID] += 100000 - sum*1000
 		}
 		ldFlag.Targets.Instructions = append(ldFlag.Targets.Instructions, weightInstruction)
 	}
 }
 
 func convertFlag(sapFlag sap.Flag) launchdarkly.Flag {
+	defaults := launchdarkly.DefaultVariation{
+		OffVariation: sapFlag.OffVariationIndex,
+		OnVariation:  sapFlag.DefaultVariationIndex,
+	}
+	if sapFlag.ReleaseDetails != nil {
+		releaseVariationIndex := sapFlag.ReleaseDetails.VariationIndex
+		defaults.OnVariation = releaseVariationIndex
+		defaults.OnVariation = releaseVariationIndex
+	}
 	return launchdarkly.Flag{
 		Name:        sapFlag.ID,
 		Kind:        resolveKind(sapFlag.VariationType),
@@ -154,10 +141,7 @@ func convertFlag(sapFlag sap.Flag) launchdarkly.Flag {
 		Description: sapFlag.Description,
 		Temporary:   false,
 		Variations:  resolveVariations(sapFlag),
-		Defaults: launchdarkly.DefaultVariation{
-			OffVariation: sapFlag.OffVariationIndex,
-			OnVariation:  sapFlag.DefaultVariationIndex,
-		},
+		Defaults:    defaults,
 	}
 }
 

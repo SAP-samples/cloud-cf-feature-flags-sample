@@ -17,11 +17,17 @@ type Flag struct {
 	Description           string            `json:"description"`
 	DirectShipments       []DirectShipments `json:"directShipments"`
 	WeightedChoices       []WeightedChoices `json:"weightedChoices"`
+	ReleaseDetails        *ReleaseDetails   `json:"releaseDetails,omitempty"`
 	VariationType         string            `json:"variationType"`
 	Variations            []string          `json:"variations"`
 	OffVariationIndex     int               `json:"offVariationIndex"`
 	DefaultVariationIndex int               `json:"defaultVariationIndex"`
 	Enabled               bool              `json:"enabled"`
+}
+
+type ReleaseDetails struct {
+	VariationIndex    int `json:"variationIndex"`
+	CurrentPercentage int `json:"currentPercentage"`
 }
 
 type DirectShipments struct {

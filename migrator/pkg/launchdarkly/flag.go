@@ -1,6 +1,12 @@
 package launchdarkly
 
-const BaseURL = "https://app.launchdarkly.com"
+const (
+	BaseURL                     = "https://app.launchdarkly.com"
+	WeightsInstructionKind      = "updateFallthroughVariationOrRollout"
+	TurnFlagOnInstructionKind   = "turnFlagOn"
+	TurnFlagOffInstructionKind  = "turnFlagOff"
+	ReplaceRulesInstructionKind = "replaceRules"
+)
 
 type Flag struct {
 	Name        string           `json:"name"`
