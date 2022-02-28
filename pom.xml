@@ -36,10 +36,10 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-      <groupId>com.launchdarkly</groupId>
-      <artifactId>launchdarkly-java-server-sdk</artifactId>
-      <version>5.7.1</version>
-    </dependency>
+			<groupId>com.launchdarkly</groupId>
+			<artifactId>launchdarkly-java-server-sdk</artifactId>
+			<version>5.7.1</version>
+		</dependency>
 
 		<!-- Test dependencies -->
 		<dependency>
