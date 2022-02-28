@@ -95,6 +95,64 @@ func (c *Client) withRetry(action func() *httpError) {
 	}
 }
 
+type listFlagResult struct {
+	Items []struct {
+		Key string `json:"key"`
+	} `json:"items"`
+}
+
+func (c *Client) GetLDFlagKeys() (map[string]struct{}, error) {
+	allFlags := make(map[string]struct{})
+
+	var flags *listFlagResult
+	var err *httpError
+	c.withRetry(func() *httpError {
+		flags, err = c.getFlags()
+		return err
+	})
+	if err != nil {
+		return nil, errors.New(err.message)
+	}
+
+	for _, flag := range flags.Items {
+		allFlags[flag.Key] = struct{}{}
+	}
+	return allFlags, nil
+}
+
+func (c *Client) getFlags() (*listFlagResult, *httpError) {
+	url := fmt.Sprintf("%s/api/v2/flags/%s", BaseURL, c.params.ProjectKey)
+
+	listFlagsRequest, err := http.NewRequest(http.MethodGet, url, nil)
+	errors.Check(err)
+	listFlagsRequest.Header.Set("Authorization", c.params.APIKey)
+
+	resp, err := c.httpClient.Do(listFlagsRequest)
+	if err != nil {
+		return nil, &httpError{
+			status:  -1,
+			message: fmt.Sprintf("Failed to list flags in LaunchDarkly: %s", err.Error()),
+		}
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, &httpError{
+			status:  resp.StatusCode,
+			message: fmt.Sprintf("Unexpected status code returned from LaunchDarkly while listing flags: %s", err.Error()),
+		}
+	}
+	var response listFlagResult
+
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, &httpError{
+			status:  -1,
+			message: fmt.Sprintf("Failed to decode response: %s", err.Error()),
+		}
+	}
+
+	return &response, nil
+}
+
 func (c *Client) CreateFlag(flag Flag) (*Flag, error) {
 	var err *httpError
 	var createdFlag *Flag

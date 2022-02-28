@@ -1,7 +1,9 @@
 package main
 
 import (
+	"github.com/SAP-samples/cloud-cf-feature-flags-sample/pkg/errors"
 	"log"
+	"strings"
 
 	"github.com/SAP-samples/cloud-cf-feature-flags-sample/pkg/conversion"
 	"github.com/SAP-samples/cloud-cf-feature-flags-sample/pkg/launchdarkly"
@@ -11,11 +13,27 @@ import (
 
 func main() {
 	sapFlags := sap.ReadFlags()
-	createFlagsInLaunchDarkly(sapFlags.Flags)
+	ldClient := launchdarkly.NewClient(parameters.Get().ClientParams)
+	checkForFlagCollisions(ldClient, sapFlags.Flags)
+	createFlagsInLaunchDarkly(ldClient, sapFlags.Flags)
 }
 
-func createFlagsInLaunchDarkly(flags []sap.Flag) {
-	client := launchdarkly.NewClient(parameters.Get().ClientParams)
+func checkForFlagCollisions(client *launchdarkly.Client, flags []sap.Flag) {
+	ldFlagIDs, err := client.GetLDFlagKeys()
+	errors.Check(err)
+	conflictingFlags := make([]string, 0)
+	for _, sapFlag := range flags {
+		if _, ok := ldFlagIDs[sapFlag.ID]; ok {
+			conflictingFlags = append(conflictingFlags, sapFlag.ID)
+		}
+	}
+	if len(conflictingFlags) != 0 {
+		log.Fatalf("[ERR] Found %d conflicting flags with keys: %s",
+			len(conflictingFlags), strings.Join(conflictingFlags, ", "))
+	}
+}
+
+func createFlagsInLaunchDarkly(client *launchdarkly.Client, flags []sap.Flag) {
 	failedFlags := make(map[string]error)
 
 	for _, sapFlag := range flags {
