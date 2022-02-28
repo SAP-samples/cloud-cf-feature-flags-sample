@@ -35,7 +35,7 @@ public class FeatureFlagsService {
 	}
 
 	/**
-	 * Gets the flag by given ID.
+	 * Gets the flag by given ID and identifier.
 	 *
 	 * @param id
 	 *            - ID of the feature flag

@@ -1,5 +1,6 @@
 package com.sap.cloud.service.flags.demo.controller;
 
+import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -64,32 +65,49 @@ public class DemoControllerTest {
 	@Test
 	public void testEvaluate_EvaluatesBooleanFeatureFlag_WithoutIdentifier() throws Exception {
 		when(featureFlagsService.getFlag("feature-flag", null)).thenReturn(booleanFlag);
-		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
-				containsString(
-						"Feature flag with name <strong>feature-flag</strong> is <strong>BOOLEAN</strong>. Variation is <strong>true</strong>.")));
+		mockMvc.perform(get("/evaluate/feature-flag"))
+				.andExpect(status().isOk())
+				.andExpect(content().string(
+						allOf(containsString("Feature flag with name <strong>feature-flag</strong>."),
+								containsString("Type is <strong>BOOLEAN</strong>."),
+								containsString("Variation is <strong>true</strong>."))
+				));
 	}
 
 	@Test
 	public void testEvaluate_EvaluatesBooleanFeatureFlag_WithEmptyIdentifier() throws Exception {
 		when(featureFlagsService.getFlag("feature-flag", "")).thenReturn(booleanFlag);
-		mockMvc.perform(get("/evaluate/feature-flag?identifier=")).andExpect(status().isOk()).andExpect(content().string(
-				containsString(
-						"Feature flag with name <strong>feature-flag</strong> is <strong>BOOLEAN</strong>. Variation is <strong>true</strong>.")));
+		mockMvc.perform(get("/evaluate/feature-flag?identifier="))
+				.andExpect(status().isOk())
+				.andExpect(content().string(
+						allOf(containsString("Feature flag with name <strong>feature-flag</strong>."),
+								containsString("Type is <strong>BOOLEAN</strong>."),
+								containsString("Variation is <strong>true</strong>."))
+				));
 	}
 
 	@Test
 	public void testEvaluate_EvaluatesBooleanFeatureFlag_WithIdentifier() throws Exception {
 		when(featureFlagsService.getFlag("feature-flag", "my-identifier")).thenReturn(booleanFlag);
-		mockMvc.perform(get("/evaluate/feature-flag?identifier=my-identifier")).andExpect(status().isOk()).andExpect(content().string(
-				containsString(
-						"Feature flag with name <strong>feature-flag</strong> is <strong>BOOLEAN</strong>. Variation is <strong>true</strong>.")));
+		mockMvc.perform(get("/evaluate/feature-flag?identifier=my-identifier"))
+		.andExpect(status().isOk())
+		.andExpect(content().string(
+				allOf(containsString("Feature flag with name <strong>feature-flag</strong>."),
+						containsString("Type is <strong>BOOLEAN</strong>."),
+						containsString("Variation is <strong>true</strong>."))
+		));
 	}
 
 	@Test
 	public void testEvaluate_EvaluatesStringFeatureFlag() throws Exception {
 		when(featureFlagsService.getFlag("feature-flag", null)).thenReturn(stringFlag);
-		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
-				containsString("Feature flag with name <strong>feature-flag</strong> is <strong>STRING</strong>. Variation is <strong>variation-1</strong>.")));
+		mockMvc.perform(get("/evaluate/feature-flag"))
+		.andExpect(status().isOk())
+		.andExpect(content().string(
+				allOf(containsString("Feature flag with name <strong>feature-flag</strong>."),
+						containsString("Type is <strong>STRING</strong>."),
+						containsString("Variation is <strong>variation-1</strong>."))
+				));
 	}
 
 	@Test
