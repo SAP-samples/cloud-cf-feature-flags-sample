@@ -173,7 +173,7 @@ An _Evaluation Form_ opens.
 
 The Feature Flags dashboard will be accessed multiple times throughout this tutorial.
 Here is how to open it: navigate to Feature Flags service instance dashboard in the SAP Cloud Platform Cockpit
-(for example, https://feature-flags-dashboard.cfapps.eu10.hana.ondemand.com/manageinstances/<instance-id\>).
+(for example, https://<subdomain\>.feature-flags-dashboard.cfapps.eu10.hana.ondemand.com/manageinstances/<instance-id\>).
 The instance ID is a unique ID of the service instance.
 
 > **Note**: The easiest way to access the Feature Flags dashboard is through the cockpit. Go to _<your_subaccount> > <your_space> > Service Instances > Actions (from your service instance line) > Open Dashboard icon_.
