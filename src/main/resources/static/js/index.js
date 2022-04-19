@@ -2,9 +2,10 @@ $(document).ready(function () {
     var evaluationAnchor = $('#evaluation-anchor');
 
     evaluationAnchor.click(function (event) {
-        var name = $('#feature-flag-name-input').val();
-        var identifier = $('#feature-flag-identifier-input').val();
-        var href = `/evaluate/${name}?identifier=${identifier}`;
+        var campaign = $('#flagship-campaign-input').val();
+        var flagName = $('#flagship-flag-name-input').val();
+        var visitorId = $('#flagship-visitor-id-input').val();
+        var href = `/evaluate/?campaign=${campaign}&flagName=${flagName}&visitorId=${visitorId}`;
         evaluationAnchor.attr('href', href);
     });
 

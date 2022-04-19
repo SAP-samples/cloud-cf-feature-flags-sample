@@ -1,8 +1,16 @@
 package com.sap.cloud.service.flags.demo.service;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.sap.cloud.service.flags.demo.config.FeatureFlagsServiceInfo;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestOperations;
@@ -14,7 +22,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 public class FeatureFlagsService {
 
+	private static final String API_KEY_HEADER = "x-api-key";
+	private static final String VISITOR_ID_PROPERTY =	"visitor_id";
+
 	private URI baseUri;
+	private FeatureFlagsServiceInfo info;
 	private RestOperations restOperations;
 
 	/**
@@ -29,8 +41,9 @@ public class FeatureFlagsService {
 	 *            for communication with Feature Flags service
 	 */
 
-	public FeatureFlagsService(final URI baseUri, final RestOperations restOperations) {
-		this.baseUri = baseUri;
+	public FeatureFlagsService(final FeatureFlagsServiceInfo info, final RestOperations restOperations) {
+		this.baseUri = URI.create(info.getUri());
+		this.info = info;
 		this.restOperations = restOperations;
 	}
 
@@ -42,31 +55,45 @@ public class FeatureFlagsService {
 	 * @return the feature flag
 	 */
 
-	public Flag getFlag(final String id, final String identifier) throws EvaluationException {
-		// @formatter:off
-		UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUri(baseUri).path("/api/v2/evaluate/{id}");
-
-		if (identifier != null && identifier.length() > 0) {
-			urlBuilder.queryParam("identifier", identifier);
-		}
-
-		URI url = urlBuilder.buildAndExpand(id).toUri();
-		// @formatter:on
+	public Flag getFlag(final String campaignId, final String flagName, final String visitorId) throws EvaluationException {
+		UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUri(baseUri).path("/v2/{envKey}/campaigns/{campaignId}");
+		URI url = urlBuilder.buildAndExpand(info.getEnvKey(), campaignId).toUri();
+		HttpEntity<Map<String, Object>> requestEntity = prepareRequestEntity(info.getApiKey(), visitorId);
 
 		try {
-			ResponseEntity<Flag> responseEntity = restOperations.getForEntity(url, Flag.class);
-			return responseEntity.getBody();
-		} catch (HttpStatusCodeException e) {
-			if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+			ResponseEntity<Campaign> responseEntity = restOperations.postForEntity(url, requestEntity, Campaign.class);
+			Campaign campaign = responseEntity.getBody();
+			Modifications modifications = campaign.getVariation().getModifications();
+
+			if (!modifications.haveFlag(flagName)) {
 				return null;
+			}
+
+			return new Flag(modifications.getFlagType(flagName), modifications.getFlagValue(flagName));
+		} catch (HttpStatusCodeException e) {
+			if (e.getStatusCode() == HttpStatus.NO_CONTENT) {
+				String message = String.format("The current visitor '%s' is not being targeted by any variation/scenario", visitorId);
+				throw new EvaluationException(message);
 			}
 
 			if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
 				throw new EvaluationException(e.getResponseBodyAsString());
 			}
 
-			String message = String.format("Feature Flags Service returned status %d.", e.getStatusCode().value());
+			String message = String.format("Flagship returned status %d.", e.getStatusCode().value());
 			throw new EvaluationException(message);
 		}
+	}
+
+	private HttpEntity<Map<String, Object>> prepareRequestEntity(String apiKey, String visitorId) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.set(API_KEY_HEADER, apiKey);
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+		Map<String, Object> map = new HashMap<>();
+		map.put(VISITOR_ID_PROPERTY, visitorId);
+
+		return new HttpEntity<>(map, headers);
 	}
 }

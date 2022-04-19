@@ -5,7 +5,6 @@ import java.util.Optional;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.sap.cloud.service.flags.demo.service.EvaluationException;
@@ -59,8 +58,10 @@ public class DemoController {
 	 * @return the evaluation view
 	 */
 
-	@GetMapping("/evaluate/{id}")
-	public String evaluate(@PathVariable final String id, @RequestParam(required=false) final String identifier, final ModelMap modelMap) {
+	@GetMapping("/evaluate")
+	public String evaluate(@RequestParam("campaign") final String campaign, @RequestParam("flagName") final String flagName,
+			@RequestParam("visitorId") final String visitorId, final ModelMap modelMap) {
+
 		String template = "evaluation";
 
 		boolean credentialsAvailable = hasBoundServiceInstance();
@@ -70,9 +71,12 @@ public class DemoController {
 			return template;
 		}
 
+		modelMap.addAttribute("campaign", campaign);
+		modelMap.addAttribute("flagName", flagName);
+
 		Flag flag;
 		try {
-			flag = featureFlagsServiceOptional.get().getFlag(id, identifier);
+			flag = featureFlagsServiceOptional.get().getFlag(campaign, flagName, visitorId);
 		} catch (EvaluationException e) {
 			modelMap.addAttribute("backendError", e.getMessage());
 			return template;
@@ -82,7 +86,7 @@ public class DemoController {
 		modelMap.addAttribute("flagAvailable", flagAvailable);
 		if (flagAvailable) {
 			modelMap.addAttribute("type", flag.getType());
-			modelMap.addAttribute("variation", flag.getVariation());
+			modelMap.addAttribute("value", flag.getValue());
 		}
 
 		return template;

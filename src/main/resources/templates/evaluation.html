@@ -17,17 +17,20 @@
               <div th:switch="${flagAvailable}">
                 <div th:case="false" class="alert alert-dismissible alert-warning">
                   <strong>Not found!</strong>
-                  Feature flag with name <strong>[[${id}]]</strong> is <strong>missing</strong>. Try to create it using the Feature Flags Service dashboard!
+                  Feature flag with name <strong>[[${flagName}]]</strong> is <strong>missing</strong>. Try to create it using the Feature Flags Service dashboard!
                 </div>
               <div th:case="true">
                 <div>
-                  Feature flag with name <strong>[[${id}]]</strong>.
+                  Campaign <strong>[[${campaign}]]</strong>.
+                </div>
+                <div>
+                  Feature flag with name <strong>[[${flagName}]]</strong>.
                 </div>
                 <div>
                   Type is <strong>[[${type}]]</strong>.
                 </div>
                 <div>
-                  Variation is <strong>[[${variation}]]</strong>.
+                  Value is <strong>[[${value}]]</strong>.
                 </div>
               </div>
             </div>

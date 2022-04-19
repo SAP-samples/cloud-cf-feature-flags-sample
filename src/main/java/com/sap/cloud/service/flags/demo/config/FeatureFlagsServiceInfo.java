@@ -12,13 +12,25 @@ public class FeatureFlagsServiceInfo extends UriBasedServiceInfo {
 
 	public static final String HTTPS_SCHEME = "https";
 
-	public FeatureFlagsServiceInfo(String id, String host, int port, String username, String password, String path) {
-		super(id, HTTPS_SCHEME, host, port, username, password, path);
-		Assert.notNull(username);
-		Assert.notNull(password);
+	private final String envKey;
+	private final String apiKey;
+
+	public FeatureFlagsServiceInfo(String id, String baseUri, String envKey, String apiKey) {
+		super(id, baseUri);
+
+		Assert.notNull(envKey);
+		this.envKey = envKey;
+
+		Assert.notNull(apiKey);
+		this.apiKey = apiKey;
 	}
 
-	public FeatureFlagsServiceInfo(String id, String uriString) {
-		super(id, uriString);
+	public String getEnvKey() {
+		return this.envKey;
 	}
+
+	public String getApiKey() {
+		return this.apiKey;
+	}
+
 }

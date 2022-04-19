@@ -7,35 +7,32 @@ package com.sap.cloud.service.flags.demo.service;
 public class Flag {
 
 	private FlagType type;
-	private String variation;
+	private Object value;
 
-	public Flag() {
-	}
-
-	public Flag(FlagType type, String variation) {
+	public Flag(FlagType type, Object value) {
 		this.type = type;
-		this.variation = variation;
+		this.value = value;
 	}
 
 	public void setType(FlagType type) {
 		this.type = type;
 	}
 
-	public void setVariation(String variation) {
-		this.variation = variation;
+	public void setValue(String value) {
+		this.value = value;
 	}
 
 	public FlagType getType() {
 		return this.type;
 	}
 
-	public String getVariation() {
-		return this.variation;
+	public Object getValue() {
+		return this.value;
 	}
 
 	@Override
 	public String toString() {
-		return "Flag [type=" + type + ", variation=" + variation + "]";
+		return "Flag [type=" + type + ", value=" + value + "]";
 	}
 
 	@Override
@@ -43,7 +40,7 @@ public class Flag {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
-		result = prime * result + ((variation == null) ? 0 : variation.hashCode());
+		result = prime * result + ((value == null) ? 0 : value.hashCode());
 		return result;
 	}
 
@@ -58,10 +55,10 @@ public class Flag {
 		Flag other = (Flag) obj;
 		if (type != other.type)
 			return false;
-		if (variation == null) {
-			if (other.variation != null)
+		if (value == null) {
+			if (other.value != null)
 				return false;
-		} else if (!variation.equals(other.variation))
+		} else if (!value.equals(other.value))
 			return false;
 		return true;
 	}
