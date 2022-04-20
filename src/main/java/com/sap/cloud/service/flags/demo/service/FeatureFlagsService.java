@@ -30,15 +30,14 @@ public class FeatureFlagsService {
 	private RestOperations restOperations;
 
 	/**
-	 * Constructs a new {@link QuotaCheck} object with give base URI and
+	 * Constructs a new {@link FeatureFlagsService} object with given {@link FeatureFlagsServiceInfo} and
 	 * {@link RestOperations}.
 	 *
-	 * @param baseUri
-	 *            - the base URI of Feature Flags service <i>(e.g.
-	 *            https://feature-flags.cfapps.us10.hana.ondemand.com/)</i>
+	 * @param info
+	 *            - object containing information on how to connect to the service.
 	 * @param restOperations
-	 *            - a configured {@link RestOperation} with Basic authentication
-	 *            for communication with Feature Flags service
+	 *            - a configured {@link RestOperation} object
+	 *            for communication with the Feature Flags service.
 	 */
 
 	public FeatureFlagsService(final FeatureFlagsServiceInfo info, final RestOperations restOperations) {
@@ -48,10 +47,15 @@ public class FeatureFlagsService {
 	}
 
 	/**
-	 * Gets the flag by given ID and identifier.
+	 * Gets the flag by given campaign, flag name and visitor id.
 	 *
-	 * @param id
-	 *            - ID of the feature flag
+	 * @param campaignId
+	 *            - name of the Use Case (slug) from the Flagship dashboard, used as campaign in the Decision API.
+	 * @param flagName
+	 * 						- name of the flag from the campaign to retrieve.
+	 * @param visitorId
+	 * 						- unique identifier of the current visitor of the demo application.
+	 *
 	 * @return the feature flag
 	 */
 

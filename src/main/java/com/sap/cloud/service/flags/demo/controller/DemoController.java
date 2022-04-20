@@ -47,11 +47,15 @@ public class DemoController {
 
 	/**
 	 * Returns the evaluation view performing the real feature toggling.
-	 * Depending the feature flag status an appropriate message is being
+	 * Depending the feature flag status and appropriate message is being
 	 * displayed.
 	 *
-	 * @param id
-	 *            - ID of the feature flag
+	 * @param campaign
+	 *            - name of the Use Case (slug) from the Flagship dashboard, used as campaign in the Decision API.
+	 * @param flagName
+	 * 						- name of the flag from the campaign to retrieve.
+	 * @param visitorId
+	 * 						- unique identifier of the current visitor of the demo application.
 	 * @param modelMap
 	 *            - the {@link ModelMap}
 	 *

@@ -3,6 +3,11 @@ package com.sap.cloud.service.flags.demo.service;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Class used for representing the feature modifications (flags) of a variation
+ * for a particular campaign (Use Case) JSON response.
+ */
+
 public class Modifications {
 	private Map<String, Object> value;
 
@@ -13,6 +18,10 @@ public class Modifications {
 	public Modifications(String key, Object value) {
 		this.value = new HashMap<>();
 		this.value.put(key, value);
+	}
+
+	public Map<String, Object> getValue() {
+		return value;
 	}
 
 	public boolean haveFlag(String flagName) {
