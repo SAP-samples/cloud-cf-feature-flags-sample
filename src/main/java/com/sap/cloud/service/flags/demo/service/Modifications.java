@@ -1,9 +1,19 @@
 package com.sap.cloud.service.flags.demo.service;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class Modifications {
 	private Map<String, Object> value;
+
+	public Modifications() {
+		// required for JSON encode/decode
+	}
+
+	public Modifications(String key, Object value) {
+		this.value = new HashMap<>();
+		this.value.put(key, value);
+	}
 
 	public Map<String, Object> getValue() {
 		return value;

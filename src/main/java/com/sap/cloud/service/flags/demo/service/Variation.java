@@ -3,6 +3,14 @@ package com.sap.cloud.service.flags.demo.service;
 public class Variation {
 	private Modifications modifications;
 
+	public Variation() {
+		// required for JSON encode/decode
+	}
+
+	public Variation(Modifications modifications) {
+		this.modifications = modifications;
+	}
+
 	public Modifications getModifications() {
 		return modifications;
 	}
