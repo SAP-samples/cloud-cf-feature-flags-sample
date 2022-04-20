@@ -60,8 +60,8 @@ public class FeatureFlagsService {
 	 */
 
 	public Flag getFlag(final String campaignId, final String flagName, final String visitorId) throws EvaluationException {
-		UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUri(baseUri).path("/v2/{envKey}/campaigns/{campaignId}");
-		URI url = urlBuilder.buildAndExpand(info.getEnvKey(), campaignId).toUri();
+		UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUri(baseUri).path("/v2/{envId}/campaigns/{campaignId}");
+		URI url = urlBuilder.buildAndExpand(info.getEnvId(), campaignId).toUri();
 		HttpEntity<Map<String, Object>> requestEntity = prepareRequestEntity(info.getApiKey(), visitorId);
 
 		try {

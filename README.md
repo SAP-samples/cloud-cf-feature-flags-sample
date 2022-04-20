@@ -1,8 +1,8 @@
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP-samples/cloud-cf-feature-flags-sample)](https://api.reuse.software/info/github.com/SAP-samples/cloud-cf-feature-flags-sample)
 
-# Feature Flags Service Demo Application
+# Flagship Demo Application
 
-Feature Flags service Demo Application is a simple Spring Boot application that consumes the [Feature Flags service](https://help.sap.com/viewer/2250efa12769480299a1acd282b615cf/Cloud/en-US) on SAP Cloud Platform, Cloud Foundry environment. It implements a [feature toggle](https://en.wikipedia.org/wiki/Feature_toggle) (evaluation call to the Feature Flags service) and exposes this feature toggle through a Web user interface. There is also one REST end-point that reads the value of `VCAP_SERVICES` environment variable.
+Flagship Demo Application is a simple Spring Boot application that consumes [Flagship](https://www.flagship.io/) on SAP Cloud Platform, Cloud Foundry environment. It implements a [feature toggle](https://en.wikipedia.org/wiki/Feature_toggle) (evaluation call to Flagship) and exposes this feature toggle through a Web user interface. There is also one REST end-point that reads the value of `VCAP_SERVICES` environment variable.
 
 ## Prerequisites
 
@@ -11,10 +11,11 @@ Feature Flags service Demo Application is a simple Spring Boot application that 
 * have a [trial space on a Cloud Foundry instance](https://help.sap.com/products/BTP/65de2977205c403bbc107264b8eccf4b/fa5deb9cc4be4ca58070456cd2c47647.html#loioe9aed07891e545dd88192df013646897)
 * have set up a [curl](https://curl.haxx.se/download.html) plug-in for cmd
 * have [installed cf CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
+* have an account in [Flagship](https://app.flagship.io/)
 
 ## Running the Application on SAP Cloud Platform
 
-Follow these steps to run the Feature Flags Service Demo application on SAP Cloud Platform, Cloud Foundry environment.
+Follow these steps to run the Flagship Demo application on SAP Cloud Platform, Cloud Foundry environment.
 
 > **Note:** This guide uses the Cloud Foundry trial account on Europe (Frankfurt) region (https://account.hanatrial.ondemand.com/cockpit#/home/overview). If you want to use a different region, you have to modify the domain in the requests. For more information about regions and hosts on SAP Cloud Platform, Cloud Foundry environment, see [Regions and Hosts](https://help.sap.com/viewer/65de2977205c403bbc107264b8eccf4b/Cloud/en-US/350356d1dc314d3199dca15bd2ab9b0e.html).
 
@@ -23,13 +24,13 @@ Follow these steps to run the Feature Flags Service Demo application on SAP Clou
 - [1. Build the feature-flags-demo Application](#1-build-the-feature-flags-demo-application)
 - [2. Edit application name in manifest file](#2-edit-application-name-in-manifest-file)
 - [3. Deploy feature-flags-demo on SAP Cloud Platform](#3-deploy-feature-flags-demo-on-sap-cloud-platform)
-- [4. Create a Service Instance of Feature Flags service](#4-create-a-service-instance-of-feature-flags-service)
-  * [4.1 Ensure the `feature-flags` Service Exists in the Marketplace](#41-ensure-the-feature-flags-service-exists-in-the-marketplace)
-  * [4.2 Create a Service Instance of Feature Flags with Plan `standard`](#42-create-a-service-instance-of-feature-flags-with-plan-standard)
+- [4. Create a user provided service with Flagship connection information](#4-create-a-user-provided-service-with-flagship-connection-information)
+  * [4.1 Get Flagship environment id and API key](#41-get-flagship-environment-id-and-api-key)
+  * [4.2 Create a user provided service](#42-create-a-user-provided-service)
 - [5. Call the feature-flags-demo Application's /vcap_services End-Point](#5-call-the-feature-flags-demo-applications-vcap_services-end-point)
-- [6. Bind feature-flags-demo to feature-flags-instance](#6-bind-feature-flags-demo-to-feature-flags-instance)
+- [6. Bind feature-flags-demo to flagship-instance](#6-bind-feature-flags-demo-to-flagship-instance)
 - [7. Restage feature-flags-demo](#7-restage-feature-flags-demo)
-- [8. Ensure that feature-flags-instance is Bound to feature-flags-demo](#8-ensure-that-feature-flags-instance-is-bound-to-feature-flags-demo)
+- [8. Ensure that flagship-instance is bound to feature-flags-demo](#8-ensure-that-flagship-instance-is-bound-to-feature-flags-demo)
 - [Accessing the Demo Application](#accessing-the-demo-application)
 - [Accessing the Feature Flags Dashboard](#accessing-the-feature-flags-dashboard)
 - [9. Evaluate a Missing Feature Flag](#9-evaluate-a-missing-feature-flag)
@@ -56,7 +57,7 @@ Follow these steps to run the Feature Flags Service Demo application on SAP Clou
 
 ### 2. Edit application name in manifest file
 
-Due to CloudFoundry's limitiation in regards to application naming it's quite possible for someone to have already deployed the Feature Flags demo application with the **feature-flags-demo** name as it is currently set in the **manifest.yml** file. CloudFoundry will not allow another application with the same name to be deployed, so you **MUST** edit the manifest file and change the application name before deploying. For example:
+Due to CloudFoundry's limitiation in regards to application naming it's quite possible for someone to have already deployed the demo application with the **feature-flags-demo** name as it is currently set in the **manifest.yml** file. CloudFoundry will not allow another application with the same name to be deployed, so you **MUST** edit the manifest file and change the application name before deploying. For example:
 
     ---
     applications:
@@ -72,31 +73,22 @@ and when requesting the application in the browser or via curl.
     $ cf login
     $ cf push
 
-### 4. Create a Service Instance of Feature Flags service
+### 4. Create a user provided service with Flagship connection information
 
-#### 4.1 Ensure the `feature-flags` Service Exists in the Marketplace
+#### 4.1 Get Flagship environment id and API key
 
-    $ cf marketplace
+1. Login to [Flagship](https://app.flagship.io/) and open _Settings_ -> _Environment Settings_.
+2. Copy the corresponding environment id and API key.
 
-    -----
-    Getting services from marketplace in org <ORG_ID> / space dev as <USER_ID>...
-    OK
-    service          	plans    	description
-    ...
-    feature-flags    	standard     	Feature Flags service for controlling feature rollout
-    ...
+#### 4.2 Create a user provided service
 
+Execute the following command using the environment id and API key from the previous step.
 
-#### 4.2 Create a Service Instance of Feature Flags with Plan `standard`
-
-    $ cf create-service feature-flags standard feature-flags-instance
+    $ cf create-user-provided-service flagship-instance -t flagship-flags-service -p "{ \"base-uri\": \"https://decision.flagship.io\", \"env-id\": \"<env-id>\", \"api-key\": \"<api-key>\" }"
 
     -----
-    Creating service instance feature-flags-instance in org <ORG_ID> / space dev as <USER_ID>...
+    Creating user provided service flagship-instance in org <ORG_ID> / space dev as <USER_ID>...
     OK
-
-> **Note:** Alternatively, you can also use the SAP Cloud Platform Cockpit. See [Create a Service Instance](https://help.sap.com/viewer/2250efa12769480299a1acd282b615cf/Cloud/en-US/c7b30b5bf54149148d2302617917dc3e.html).
-
 
 ### 5. Call the feature-flags-demo Application's /vcap_services End-Point
 
@@ -108,16 +100,14 @@ In the command you use the following URL: \<application_URL\>/vcap_services. You
 
     $ curl https://feature-flags-demo.cfapps.eu10.hana.ondemand.com/vcap_services
 
-### 6. Bind feature-flags-demo to feature-flags-instance
+### 6. Bind feature-flags-demo to flagship-instance
 
-    $ cf bind-service feature-flags-demo feature-flags-instance
+    $ cf bind-service feature-flags-demo flagship-instance
 
     -----
-    Binding service feature-flags-instance to app feature-flags-demo in org <ORG_ID> / space dev as <USER_ID>...
+    Binding service flagship-instance to app feature-flags-demo in org <ORG_ID> / space dev as <USER_ID>...
     OK
     TIP: Use 'cf restage feature-flags-demo' to ensure your env variable changes take effect
-
-> **Note:** Alternatively, you can also use the SAP Cloud Platform Cockpit. See [Bind Your Application to the Feature Flags Service Instance](https://help.sap.com/viewer/2250efa12769480299a1acd282b615cf/Cloud/en-US/e7ef0ce6d4b14ae387de5bb18549c250.html).
 
 ### 7. Restage feature-flags-demo
 
@@ -125,7 +115,7 @@ Restage `feature-flags-demo` application so the changes in the application envir
 
     $ cf restage feature-flags-demo
 
-### 8. Ensure that feature-flags-instance is Bound to feature-flags-demo
+### 8. Ensure that flagship-instance is bound to feature-flags-demo
 
 > **Note**: Expect to receive the injected environment variables by the Feature Flags service.
 
@@ -138,24 +128,11 @@ Sample JSON response:
   "feature-flags": [
     {
       "credentials": {
-        "x509": {
-          "certificate": "...",
-          "key": "...",
-          "clientid": "...",
-          "...": "..."
-        },
-        "password": "aa_GgZf1GIDZbuXV9s0RknzRE+qs0e=",
-        "uri": "https://feature-flags.cfapps.eu10.hana.ondemand.com",
-        "username": "sbss_x324osjl//pmabsuskr6nshmb2arw6dld4hfb3cj4m2bonkqmm3ts6c68mdpzxz2fma="
+
       },
-      "syslog_drain_url": null,
-      "volume_mounts": [ ],
-      "label": "feature-flags",
-      "provider": null,
-      "plan": "standard",
-      "name": "feature-flags-instance",
+
       "tags": [
-        "feature-flags"
+        "flagship-flags-service"
       ]
     }
   ]
