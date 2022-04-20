@@ -15,10 +15,6 @@ public class Modifications {
 		this.value.put(key, value);
 	}
 
-	public Map<String, Object> getValue() {
-		return value;
-	}
-
 	public boolean haveFlag(String flagName) {
 		return value.containsKey(flagName);
 	}

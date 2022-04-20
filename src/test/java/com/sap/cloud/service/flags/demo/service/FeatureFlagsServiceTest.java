@@ -44,8 +44,6 @@ public class FeatureFlagsServiceTest {
 	private static final String FLAG_NAME = "feature-flag";
 
 	private FeatureFlagsService featureFlagsService;
-	private Flag booleanTrueFlag;
-	private Campaign campaignWithBoolFlag;
 	private HttpEntity<Map<String, Object>> requestEntity;
 
 	@MockBean
@@ -58,8 +56,6 @@ public class FeatureFlagsServiceTest {
 	public void setUp() {
 		FeatureFlagsServiceInfo ffsInfo = new FeatureFlagsServiceInfo(FFS_INSTANCE_ID, BASE_URI.toString(), ENV_KEY, API_KEY);
 		featureFlagsService = new FeatureFlagsService(ffsInfo, restOperations);
-		booleanTrueFlag = new Flag(FlagType.BOOLEAN, true);
-		campaignWithBoolFlag = buildCampaign(booleanTrueFlag);
 		requestEntity = buildHttpEntity();
 	}
 
@@ -78,11 +74,12 @@ public class FeatureFlagsServiceTest {
 	public void testGetFeatureFlag_ReturnsBooleanFeatureFlag() {
 		URI serviceUri = UriComponentsBuilder.fromUri(EVALUATION_URI).build().toUri();
 
-		ResponseEntity<Campaign> responseEntity = new ResponseEntity<>(campaignWithBoolFlag, HttpStatus.OK);
+        Flag booleanFlag = new Flag(FlagType.BOOLEAN, true);
+		ResponseEntity<Campaign> responseEntity = new ResponseEntity<>(buildCampaign(booleanFlag), HttpStatus.OK);
 		when(restOperations.postForEntity(serviceUri, requestEntity, Campaign.class)).thenReturn(responseEntity);
 
 		Flag actual = featureFlagsService.getFlag(CAMPAIGN_ID, FLAG_NAME, VISITOR_ID);
-		assertEquals(booleanTrueFlag, actual);
+		assertEquals(booleanFlag, actual);
 	}
 
 	@Test

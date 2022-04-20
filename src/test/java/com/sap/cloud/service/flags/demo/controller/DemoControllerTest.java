@@ -32,6 +32,13 @@ import com.sap.cloud.service.flags.demo.service.FeatureFlagsService;
 @ContextConfiguration(classes = FeatureFlagsDemoApplication.class)
 public class DemoControllerTest {
 
+	private static final String CAMPAIGN_ID = "campaign-1";
+	private static final String FLAG_NAME = "flag-1";
+	private static final String VISITOR_ID = "visitor-1";
+	private static final String EVALUATION_URL = String.format("/evaluate?campaign=%s&flagName=%s&visitorId=%s",
+			CAMPAIGN_ID, FLAG_NAME, VISITOR_ID);
+	private static final String HOME_URL = "/";
+
 	static {
 		System.setProperty(LocalConfigConnector.PROPERTIES_FILE_PROPERTY, "src/test/resources/config.properties");
 	}
@@ -40,8 +47,6 @@ public class DemoControllerTest {
 	private WebApplicationContext context;
 
 	private MockMvc mockMvc;
-	private Flag booleanFlag;
-	private Flag stringFlag;
 
 	@MockBean
 	private FeatureFlagsService featureFlagsService;
@@ -52,82 +57,71 @@ public class DemoControllerTest {
 	@Before
 	public void setUp() {
 		this.mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
-		this.booleanFlag = new Flag(FlagType.BOOLEAN, "true");
-		this.stringFlag = new Flag(FlagType.STRING, "variation-1");
 	}
 
 	@Test
 	public void testGetIndex_ReturnsIndexPage() throws Exception {
-		mockMvc.perform(get("/")).andExpect(status().isOk())
-				.andExpect(content().string(containsString("<title>Feature Flags Demo Application</title>")));
+		String expectedResponse = "<title>Feature Flags Demo Application</title>";
+		mockMvc.perform(get(HOME_URL)).andExpect(status().isOk())
+				.andExpect(content().string(containsString(expectedResponse)));
 	}
 
-//	@Test
-//	public void testEvaluate_EvaluatesBooleanFeatureFlag_WithoutIdentifier() throws Exception {
-//		when(featureFlagsService.getFlag("bool-1", "bool-1", "visitor-1")).thenReturn(booleanFlag);
-//		mockMvc.perform(get("/evaluate/feature-flag"))
-//				.andExpect(status().isOk())
-//				.andExpect(content().string(
-//						allOf(containsString("Feature flag with name <strong>feature-flag</strong>."),
-//								containsString("Type is <strong>BOOLEAN</strong>."),
-//								containsString("Variation is <strong>true</strong>."))
-//				));
-//	}
-//
-//	@Test
-//	public void testEvaluate_EvaluatesBooleanFeatureFlag_WithEmptyIdentifier() throws Exception {
-//		when(featureFlagsService.getFlag("feature-flag", "")).thenReturn(booleanFlag);
-//		mockMvc.perform(get("/evaluate/feature-flag?identifier="))
-//				.andExpect(status().isOk())
-//				.andExpect(content().string(
-//						allOf(containsString("Feature flag with name <strong>feature-flag</strong>."),
-//								containsString("Type is <strong>BOOLEAN</strong>."),
-//								containsString("Variation is <strong>true</strong>."))
-//				));
-//	}
+	@Test
+	public void testEvaluate_WhenEvaluationFails() throws Exception {
+		String mockExceptionMessage = "Evaluation failed";
+		Exception mockException = new EvaluationException(mockExceptionMessage);
+		when(featureFlagsService.getFlag(CAMPAIGN_ID, FLAG_NAME, VISITOR_ID)).thenThrow(mockException);
+		mockMvc.perform(get(EVALUATION_URL)).andExpect(status().isOk()).andExpect(content().string(
+				containsString(mockExceptionMessage)));
+	}
 
-//	@Test
-//	public void testEvaluate_EvaluatesBooleanFeatureFlag_WithIdentifier() throws Exception {
-//		when(featureFlagsService.getFlag("feature-flag", "my-identifier")).thenReturn(booleanFlag);
-//		mockMvc.perform(get("/evaluate/feature-flag?identifier=my-identifier"))
-//		.andExpect(status().isOk())
-//		.andExpect(content().string(
-//				allOf(containsString("Feature flag with name <strong>feature-flag</strong>."),
-//						containsString("Type is <strong>BOOLEAN</strong>."),
-//						containsString("Variation is <strong>true</strong>."))
-//		));
-//	}
+	@Test
+	public void testEvaluate_EvaluatesMissingFeatureFlag() throws Exception {
+		when(featureFlagsService.getFlag(CAMPAIGN_ID, FLAG_NAME, VISITOR_ID)).thenReturn(null);
+		String expectedResponse = String.format("Feature flag with name <strong>%s</strong> is <strong>missing</strong>", FLAG_NAME);
+		mockMvc.perform(get(EVALUATION_URL)).andExpect(status().isOk()).andExpect(content().string(
+				containsString(expectedResponse)));
+	}
 
-//	@Test
-//	public void testEvaluate_EvaluatesStringFeatureFlag() throws Exception {
-//		when(featureFlagsService.getFlag("feature-flag", null)).thenReturn(stringFlag);
-//		mockMvc.perform(get("/evaluate/feature-flag"))
-//		.andExpect(status().isOk())
-//		.andExpect(content().string(
-//				allOf(containsString("Feature flag with name <strong>feature-flag</strong>."),
-//						containsString("Type is <strong>STRING</strong>."),
-//						containsString("Variation is <strong>variation-1</strong>."))
-//				));
-//	}
 
-//	@Test
-//	public void testEvaluate_EvaluatesMissingFeatureFlag() throws Exception {
-//		when(featureFlagsService.getFlag("feature-flag", null)).thenReturn(null);
-//		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
-//				containsString("Feature flag with name <strong>feature-flag</strong> is <strong>missing</strong>")));
-//	}
-//
-//	@Test
-//	public void testEvaluate_WhenEvaluationFails() throws Exception {
-//		when(featureFlagsService.getFlag("feature-flag", null)).thenThrow(new EvaluationException("Evaluation failed"));
-//		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
-//				containsString("Evaluation failed")));
-//	}
+	@Test
+	public void testEvaluate_EvaluatesBooleanFeatureFlag() throws Exception {
+		Flag booleanFlag = new Flag(FlagType.BOOLEAN, true);
+		when(featureFlagsService.getFlag(CAMPAIGN_ID, FLAG_NAME, VISITOR_ID)).thenReturn(booleanFlag);
+		assertEvaluation(CAMPAIGN_ID, FLAG_NAME, FlagType.BOOLEAN, true);
+	}
+
+	@Test
+	public void testEvaluate_EvaluatesStringFeatureFlag() throws Exception {
+		Flag booleanFlag = new Flag(FlagType.STRING, "value");
+		when(featureFlagsService.getFlag(CAMPAIGN_ID, FLAG_NAME, VISITOR_ID)).thenReturn(booleanFlag);
+		assertEvaluation(CAMPAIGN_ID, FLAG_NAME, FlagType.STRING, "value");
+	}
 
 	@Test
 	public void testEvaluate_MissingServiceInstance() throws Exception {
 		when(demoController.hasBoundServiceInstance()).thenReturn(false);
-		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(
-				content().string(containsString("There is no Feature Flags service instance bound to the application.")));
+
+		String expectedResponse = "There is no Feature Flags service instance bound to the application.";
+		mockMvc.perform(get(EVALUATION_URL)).andExpect(status().isOk())
+			.andExpect(content().string(containsString(expectedResponse)));
+	}
+
+	private void assertEvaluation(String campaign, String flagName, FlagType type, Object value) throws Exception {
+		String url = String.format("/evaluate?campaign=%s&flagName=%s&visitorId=%s", campaign, flagName, VISITOR_ID);
+		String expectedCampaign = String.format("Campaign <strong>%s</strong>.", campaign);
+		String expectedFlagName = String.format("Feature flag with name <strong>%s</strong>.", flagName);
+		String expectedType = String.format("Type is <strong>%s</strong>.", type);
+		String expectedValue = String.format("Value is <strong>%s</strong>.", value);
+
+		mockMvc.perform(get(url))
+			.andExpect(status().isOk())
+			.andExpect(content().string(allOf(
+				containsString(expectedCampaign),
+				containsString(expectedFlagName),
+				containsString(expectedType),
+				containsString(expectedValue)
+			))
+		);
 	}
 }

@@ -6,19 +6,11 @@ package com.sap.cloud.service.flags.demo.service;
 
 public class Flag {
 
-	private FlagType type;
-	private Object value;
+	private final FlagType type;
+	private final Object value;
 
 	public Flag(FlagType type, Object value) {
 		this.type = type;
-		this.value = value;
-	}
-
-	public void setType(FlagType type) {
-		this.type = type;
-	}
-
-	public void setValue(String value) {
 		this.value = value;
 	}
 
