@@ -1,6 +1,7 @@
 package com.sap.cloud.service.flags.demo.service;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
@@ -31,12 +32,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class FeatureFlagsServiceTest {
 
 	private static final String FFS_INSTANCE_ID = "123";
-	private static final String ENV_KEY = "456";
+	private static final String ENV_ID = "456";
 	private static final String API_KEY = "789";
 
 	private static final String CAMPAIGN_ID = "campaign-1";
 	private static final URI BASE_URI = URI.create("https://decision.flagship.io");
-	private static final URI EVALUATION_URI = BASE_URI.resolve(String.format("/v2/%s/campaigns/%s", ENV_KEY, CAMPAIGN_ID));
+	private static final URI EVALUATION_URI = BASE_URI.resolve(String.format("/v2/%s/campaigns/%s", ENV_ID, CAMPAIGN_ID));
 
 	private static final String API_KEY_HEADER = "x-api-key";
 	private static final String VISITOR_ID_PROPERTY = "visitor_id";
@@ -54,7 +55,7 @@ public class FeatureFlagsServiceTest {
 
 	@Before
 	public void setUp() {
-		FeatureFlagsServiceInfo ffsInfo = new FeatureFlagsServiceInfo(FFS_INSTANCE_ID, BASE_URI.toString(), ENV_KEY, API_KEY);
+		FeatureFlagsServiceInfo ffsInfo = new FeatureFlagsServiceInfo(FFS_INSTANCE_ID, BASE_URI.toString(), ENV_ID, API_KEY);
 		featureFlagsService = new FeatureFlagsService(ffsInfo, restOperations);
 		requestEntity = buildHttpEntity();
 	}
@@ -67,7 +68,7 @@ public class FeatureFlagsServiceTest {
 		when(restOperations.postForEntity(serviceUri, requestEntity, Campaign.class)).thenReturn(responseEntity);
 
 		Flag actual = featureFlagsService.getFlag(CAMPAIGN_ID, FLAG_NAME, VISITOR_ID);
-		assertEquals(null, actual);
+		assertNull(actual);
 	}
 
 	@Test
