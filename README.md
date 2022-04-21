@@ -1,8 +1,10 @@
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP-samples/cloud-cf-feature-flags-sample)](https://api.reuse.software/info/github.com/SAP-samples/cloud-cf-feature-flags-sample)
 
-# Flagship Demo Application
+# Flagship demo application
 
-Flagship Demo Application is a simple Spring Boot application that consumes [Flagship](https://www.flagship.io/) on SAP Cloud Platform, Cloud Foundry environment. It implements a [feature toggle](https://en.wikipedia.org/wiki/Feature_toggle) (evaluation call to Flagship) and exposes this feature toggle through a Web user interface. There is also one REST end-point that reads the value of `VCAP_SERVICES` environment variable.
+Flagship Demo Application is a simple Spring Boot application that consumes [Flagship](https://www.flagship.io/) on SAP Cloud Platform, Cloud Foundry environment.
+It implements a [feature toggle](https://en.wikipedia.org/wiki/Feature_toggle) (evaluation call to Flagship) and exposes this feature toggle through a Web user interface.
+There is also one REST end-point that reads the value of `VCAP_SERVICES` environment variable.
 
 ## Prerequisites
 
@@ -13,65 +15,73 @@ Flagship Demo Application is a simple Spring Boot application that consumes [Fla
 * have [installed cf CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
 * have an account in [Flagship](https://app.flagship.io/)
 
-## Running the Application on SAP Cloud Platform
+## Running the application on SAP Cloud Platform
 
 Follow these steps to run the Flagship Demo application on SAP Cloud Platform, Cloud Foundry environment.
 
-> **Note:** This guide uses the Cloud Foundry trial account on Europe (Frankfurt) region (https://account.hanatrial.ondemand.com/cockpit#/home/overview). If you want to use a different region, you have to modify the domain in the requests. For more information about regions and hosts on SAP Cloud Platform, Cloud Foundry environment, see [Regions and Hosts](https://help.sap.com/viewer/65de2977205c403bbc107264b8eccf4b/Cloud/en-US/350356d1dc314d3199dca15bd2ab9b0e.html).
+> **Note:** This guide uses the Cloud Foundry trial account on Europe (Frankfurt) region (https://account.hanatrial.ondemand.com/cockpit#/home/overview).
+> If you want to use a different region, you have to modify the domain in the requests.
+> For more information about regions and hosts on SAP Cloud Platform, Cloud Foundry environment, see [Regions and Hosts](https://help.sap.com/viewer/65de2977205c403bbc107264b8eccf4b/Cloud/en-US/350356d1dc314d3199dca15bd2ab9b0e.html).
 
 <!-- toc -->
 
-- [1. Build the feature-flags-demo Application](#1-build-the-feature-flags-demo-application)
+- [1. Build the feature-flags-demo application](#1-build-the-feature-flags-demo-application)
 - [2. Edit application name in manifest file](#2-edit-application-name-in-manifest-file)
 - [3. Deploy feature-flags-demo on SAP Cloud Platform](#3-deploy-feature-flags-demo-on-sap-cloud-platform)
 - [4. Create a user provided service with Flagship connection information](#4-create-a-user-provided-service-with-flagship-connection-information)
-  * [4.1 Get Flagship environment id and API key](#41-get-flagship-environment-id-and-api-key)
-  * [4.2 Create a user provided service](#42-create-a-user-provided-service)
-- [5. Call the feature-flags-demo Application's /vcap_services End-Point](#5-call-the-feature-flags-demo-applications-vcap_services-end-point)
+    * [4.1 Get Flagship environment id and API key](#41-get-flagship-environment-id-and-api-key)
+    * [4.2 Create a user provided service](#42-create-a-user-provided-service)
+- [5. Call the feature-flags-demo application's /vcap_services endpoint](#5-call-the-feature-flags-demo-applications-vcap_services-endpoint)
 - [6. Bind feature-flags-demo to flagship-instance](#6-bind-feature-flags-demo-to-flagship-instance)
 - [7. Restage feature-flags-demo](#7-restage-feature-flags-demo)
 - [8. Ensure that flagship-instance is bound to feature-flags-demo](#8-ensure-that-flagship-instance-is-bound-to-feature-flags-demo)
-- [Accessing the Demo Application](#accessing-the-demo-application)
-- [Accessing the Feature Flags Dashboard](#accessing-the-feature-flags-dashboard)
-- [9. Evaluate a Missing Feature Flag](#9-evaluate-a-missing-feature-flag)
-- [10. Create a New Boolean Feature Flag](#10-create-a-new-boolean-feature-flag)
-- [11. Evaluate the Newly Created Boolean Feature Flag](#11-evaluate-the-newly-created-boolean-feature-flag)
-- [12. Enable the Boolean Feature Flag](#12-enable-the-boolean-feature-flag)
-- [13. Verify that the Boolean Feature Flag is Enabled](#13-verify-that-the-boolean-feature-flag-is-enabled)
-- [14. Create a New String Feature Flag](#14-create-a-new-string-feature-flag)
-- [15. Evaluate the Newly Created String Feature Flag](#15-evaluate-the-newly-created-string-feature-flag)
-- [16. Enable the String Feature Flag](#16-enable-the-string-feature-flag)
-- [17. Verify that the String Feature Flag is Enabled](#17-verify-that-the-string-feature-flag-is-enabled)
-- [18. Specify Direct Delivery Strategy of a Variation of the String Flag](#18-specify-direct-delivery-strategy-of-a-variation-of-the-string-flag)
-- [19. Evaluate the String Feature Flag Using Identifier](#19-evaluate-the-string-feature-flag-using-identifier)
+- [Accessing the demo application](#accessing-the-demo-application)
+- [Accessing Flagship UI](#accessing-flagship-ui)
+- [9. Evaluate a missing Feature Flag](#9-evaluate-a-missing-feature-flag)
+- [10. Create a new boolean Feature Flag](#10-create-a-new-boolean-feature-flag)
+- [11. Evaluate the newly created boolean Feature Flag](#11-evaluate-the-newly-created-boolean-feature-flag)
+- [12. Enable the boolean Feature Flag](#12-enable-the-boolean-feature-flag)
+- [13. Verify that the boolean Feature Flag is enabled](#13-verify-that-the-boolean-feature-flag-is-enabled)
+- [14. Create a new string Feature Flag](#14-create-a-new-string-feature-flag)
+- [15. Evaluate the newly created string Feature Flag](#15-evaluate-the-newly-created-string-feature-flag)
+- [16. Enable the string Feature Flag](#16-enable-the-string-feature-flag)
+- [17. Verify that the string Feature Flag is enabled](#17-verify-that-the-string-feature-flag-is-enabled)
+- [18. Specify direct delivery strategy of a variation of the string flag](#18-specify-direct-delivery-strategy-of-a-variation-of-the-string-flag)
+- [19. Evaluate the string Feature Flag using identifier](#19-evaluate-the-string-feature-flag-using-identifier)
 
 <!-- tocstop -->
 
-### 1. Build the feature-flags-demo Application
+### 1. Build the feature-flags-demo application
 
-    $ git clone git@github.com:SAP/cloud-cf-feature-flags-sample.git
-    $ cd cloud-cf-feature-flags-sample
-    $ mvn clean install
+```bash
+$ git clone git@github.com:SAP/cloud-cf-feature-flags-sample.git
+$ cd cloud-cf-feature-flags-sample
+$ mvn clean install
+```
 
 > **Note:** Alternatively, you can use the Eclipse IDE, use the `clean install` goal from _Run As > Maven Build..._ menu.
 
 ### 2. Edit application name in manifest file
 
-Due to CloudFoundry's limitiation in regards to application naming it's quite possible for someone to have already deployed the demo application with the **feature-flags-demo** name as it is currently set in the **manifest.yml** file. CloudFoundry will not allow another application with the same name to be deployed, so you **MUST** edit the manifest file and change the application name before deploying. For example:
+Due to CloudFoundry's limitation in regard to application naming it's quite possible for someone to have already deployed the demo application with the **feature-flags-demo** name as it is currently set in the **manifest.yml** file. CloudFoundry will not allow another application with the same name to be deployed, so you **MUST** edit the manifest file and change the application name before deploying. For example:
 
-    ---
-    applications:
-    - name: feature-flags-demo123
-      path: target/feature-flags-demo.jar
+```yaml
+---
+applications:
+- name: feature-flags-demo123
+  path: target/feature-flags-demo.jar
+```
 
 > **Note:** Use the modified value in the commands which require application name (e.g. cf bind-service)
 and when requesting the application in the browser or via curl.
 
 ### 3. Deploy feature-flags-demo on SAP Cloud Platform
 
-    $ cf api https://api.cf.eu10.hana.ondemand.com
-    $ cf login
-    $ cf push
+```bash
+$ cf api https://api.cf.eu10.hana.ondemand.com
+$ cf login
+$ cf push
+```
 
 ### 4. Create a user provided service with Flagship connection information
 
@@ -84,13 +94,15 @@ and when requesting the application in the browser or via curl.
 
 Execute the following command using the environment id and API key from the previous step.
 
-    $ cf create-user-provided-service flagship-instance -t flagship-flags-service -p "{ \"base-uri\": \"https://decision.flagship.io\", \"env-id\": \"<env-id>\", \"api-key\": \"<api-key>\" }"
+```bash
+$ cf create-user-provided-service flagship-instance -t flagship-flags-service -p "{ \"base-uri\": \"https://decision.flagship.io\", \"env-id\": \"<env-id>\", \"api-key\": \"<api-key>\" }"
 
-    -----
-    Creating user provided service flagship-instance in org <ORG_ID> / space dev as <USER_ID>...
-    OK
+-----
+Creating user provided service flagship-instance in org <ORG_ID> / space dev as <USER_ID>...
+OK
+```
 
-### 5. Call the feature-flags-demo Application's /vcap_services End-Point
+### 5. Call the feature-flags-demo application's /vcap_services endpoint
 
 > **Note**: Expect to receive an empty JSON.
 
@@ -98,159 +110,177 @@ The /vcap_services end-point simply returns the content of  _VCAP_SERVICES_ envi
 
 In the command you use the following URL: \<application_URL\>/vcap_services. You can find the \<application_URL\> in the SAP Cloud Platform Cockpit, in the _feature-flag-demo > Overview > Application Routes_.
 
-    $ curl https://feature-flags-demo.cfapps.eu10.hana.ondemand.com/vcap_services
+```bash
+$ curl https://feature-flags-demo.cfapps.eu10.hana.ondemand.com/vcap_services
+```
 
 ### 6. Bind feature-flags-demo to flagship-instance
 
-    $ cf bind-service feature-flags-demo flagship-instance
+```bash
+$ cf bind-service feature-flags-demo flagship-instance
 
-    -----
-    Binding service flagship-instance to app feature-flags-demo in org <ORG_ID> / space dev as <USER_ID>...
-    OK
-    TIP: Use 'cf restage feature-flags-demo' to ensure your env variable changes take effect
+-----
+Binding service flagship-instance to app feature-flags-demo in org <ORG_ID> / space dev as <USER_ID>...
+OK
+TIP: Use 'cf restage feature-flags-demo' to ensure your env variable changes take effect
+```
 
 ### 7. Restage feature-flags-demo
 
 Restage `feature-flags-demo` application so the changes in the application environment take effect.
 
-    $ cf restage feature-flags-demo
+```bash
+$ cf restage feature-flags-demo
+```
 
 ### 8. Ensure that flagship-instance is bound to feature-flags-demo
 
-> **Note**: Expect to receive the injected environment variables by the Feature Flags service.
+> **Note**: Expect to receive the injected environment variables.
 
-    $ curl https://feature-flags-demo.cfapps.eu10.hana.ondemand.com/vcap_services
-
+```bash
+$ curl https://feature-flags-service-demo.cfapps.sap.hana.ondemand.com/vcap_services
+```
 
 Sample JSON response:
 ```json
 {
-  "feature-flags": [
+  "user-provided": [
     {
-      "credentials": {
-
-      },
-
+      "label": "user-provided",
+      "name": "flagship-instance",
       "tags": [
         "flagship-flags-service"
-      ]
+      ],
+      "instance_guid": "...",
+      "instance_name": "flagship-instance",
+      "binding_guid": "...",
+      "binding_name": null,
+      "credentials": {
+        "api-key": "...",
+        "base-uri": "https://decision.flagship.io",
+        "env-id": "..."
+      },
+      "syslog_drain_url": "",
+      "volume_mounts": []
     }
   ]
 }
 ```
 
-### Accessing the Demo Application
+### Accessing the demo application
 
 The web interface of the demo application will be accessed multiple times throughout this tutorial.
 Here is how to open it: navigate to feature-flags-demo application overview in the SAP Cloud Platform Cockpit.
-Open the link from the _Application Routes_ section (for example, https://feature-flags-demo.cfapps.eu10.hana.ondemand.com).
-An _Evaluation Form_ opens.
+Open the link from the *Application Routes* section (for example, https://feature-flags-demo.cfapps.eu10.hana.ondemand.com).
+An *Evaluation Form* opens.
 
-### Accessing the Feature Flags Dashboard
+### Accessing Flagship UI
 
-The Feature Flags dashboard will be accessed multiple times throughout this tutorial.
-Here is how to open it via the SAP Cloud Platform Cockpit: navigate to your subaccount,
-subscribe to the Feature Flags dashboard via creating an instance of the Feature Flags service, plan _dashboard_ if haven't done so already.
-Access Feature Flags dashboard from the list of subscribed applications.
-Select the service instance you are currently working with.
+The Flagship UI will be accessed multiple times throughout this tutorial.
+Login to Flagship and select an Environment and Account from the header.
 
-The dashboard could be accessed directly via URL like https://<subdomain\>.feature-flags-dashboard.cfapps.eu10.hana.ondemand.com/manageinstances/<instance-id\>.
-The instance ID is a unique ID of the service instance.
-
-### 9. Evaluate a Missing Feature Flag
+### 9. Evaluate a missing Feature Flag
 
 > **Note**: Expect the feature flag to be missing.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Evaluate a feature flag with random name (for example, type in 'my-boolean-flag').
-The result should state that the feature flag with the given name is missing.
+2. Evaluate a feature flag with random name and campaign
+   (for example, type in
+   'my-campaign' for Flagship Campaign (slug),
+   'my-flag' for Flag Name and
+   '<your-visitor-id>' for Visitor ID).
+   The result should state that the feature flag with the given name is missing.
 
-### 10. Create a New Boolean Feature Flag
+### 10. Create a new boolean Feature Flag
 
-1. Open the Feature Flags dashboard as described [here](#accessing-the-feature-flags-dashboard).
-2. Choose _New Flag_.
-3. Fill in the required fields (for example, 'my-boolean-flag' for _Name_, 'Super cool feature' for _Description_ and 'OFF' for _State_).
-4. Choose _Save_.
+1. Open the Flagship UI as described [here](#accessing-flagship-ui).
+2. Go to **Dashboard** from the Sidebar
+3. Select a Project and click on *Create a use case*
+4. Chose the **Toggle** template
+5. Enter name, description and slug and click on **Save and continue**
+6. Give a name to the default scenario, make sure **All users** are targeted and
+   give key, type(Boolean) and value(false) to flag and click on **Save and continue**
+7. Lastly, go back to **Dashboard** and enable the flag
 
-### 11. Evaluate the Newly Created Boolean Feature Flag
+### 11. Evaluate the newly created boolean Feature Flag
 
 > **Note**: Expect the variation to be false.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Enter the boolean feature flag name in the _Feature Flag Name_ field and choose _Evaluate_.
-3. Evaluate the newly created feature flag.
-The result should state that the feature flag is of type _BOOLEAN_ and its variation is _false_.
+2. Evaluate the boolean feature flag by entering its slug, name and your visitor ID.
+   The result should state that the feature flag is of type *BOOLEAN* and its variation is *false*.
 
-### 12. Enable the Boolean Feature Flag
+### 12. Enable the boolean Feature Flag
 
-1. Open the Feature Flags dashboard as described [here](#accessing-the-feature-flags-dashboard).
-2. Enable the boolean feature flag using the switch in the _Active_ column.
+1. Open the Feature Flags dashboard as described [here](#accessing-flagship-ui).
+2. Go to **Dashboard** from the Sidebar
+3. Select the Project and click on *Edit* Use Case
+4. Go to **Scenarios**
+5. Change the flag value to true
+6. Save
 
-### 13. Verify that the Boolean Feature Flag is Enabled
+### 13. Verify that the boolean Feature Flag is enabled
 
 > **Note**: Expect the feature flag to be enabled.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Enter the boolean feature flag name in the _Feature Flag Name_ field and choose _Evaluate_.
-3. Evaluate the feature flag.
-The result should state that the feature flag is of type _BOOLEAN_ and its variation is _true_.
+2. Evaluate the boolean feature flag by entering its slug, name and your visitor ID.
+   The result should state that the feature flag is of type *BOOLEAN* and its variation is *true*.
 
-### 14. Create a New String Feature Flag
+### 14. Create a new string Feature Flag
 
-1. Open the Feature Flags dashboard as described [here](#accessing-the-feature-flags-dashboard).
-2. Choose _New Flag_.
-3. Fill in the required fields (for example, 'my-string-flag' for _Name_, 'Coolest of features' for _Description_, choose _String_ as _Flag Type_ and 'OFF' for _State_).
-Enter the following values as different variations of the flag:
-  - _Var. 1_: _variation-when-inactive_
-  - _Var. 2_: _variation-when-active_
-  - _Var. 3_ (choose the add button (with a '+' sign) to add a field for it): _variation-for-friends-and-family_
-4. Select _Var. 2_ in the _Deliver_ combobox in the _Default Variation_ section.
-5. Choose _Save_.
+1. Open the Feature Flags dashboard as described [here](#accessing-flagship-ui).
+2. Go to **Dashboard** from the Sidebar
+3. Select a Project and click on *Create a use case*
+4. Chose the **Toggle** template
+5. Enter name, description and slug and click on **Save and continue**
+6. Give a name to the default scenario, make sure **All users** are targeted and
+   give key, type(Text) and value(variation-when-inactive) to flag and click on **Save and continue**
+7. Lastly, go back to **Dashboard** and enable the flag
 
-### 15. Evaluate the Newly Created String Feature Flag
+### 15. Evaluate the newly created string Feature Flag
 
-> **Note**: Expect the variation to be _variation-when-inactive_.
+> **Note**: Expect the variation to be *variation-when-inactive*.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Enter the string feature flag name in the _Feature Flag Name_ field and choose _Evaluate_.
-3. Evaluate the newly created feature flag.
-The result should state that the feature flag is of type _STRING_ and its variation is _variation-when-inactive_.
+2. Evaluate the string feature flag by entering its slug, name and your visitor ID.
+   The result should state that the feature flag is of type *STRING* and its variation is *variation-when-inactive*.
 
-### 16. Enable the String Feature Flag
+### 16. Enable the string Feature Flag
 
-1. Open the Feature Flags dashboard as described [here](#accessing-the-feature-flags-dashboard).
-2. Enable the string feature flag using the switch in the _Active_ column.
+1. Open the Feature Flags dashboard as described [here](#accessing-flagship-ui).
+2. Go to **Dashboard** from the Sidebar.
+3. Select the Project and click on *Edit* Use Case.
+4. Go to **Scenarios**.
+5. Change the flag value to *variation-when-active*.
+6. Save
 
-### 17. Verify that the String Feature Flag is Enabled
+### 17. Verify that the string Feature Flag is enabled
 
-> **Note**: Expect the variation to be _variation-when-active_.
-
-1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Enter the string feature flag name in the _Feature Flag Name_ field and choose _Evaluate_.
-3. Evaluate the feature flag.
-The result should state that the feature flag is of type _STRING_ and its variation is _variation-when-active_.
-
-### 18. Specify Direct Delivery Strategy of a Variation of the String Flag
-
-1. Open the Feature Flags dashboard as described [here](#accessing-the-feature-flags-dashboard).
-2. Select the string feature flag.
-3. Set it to edit mode via choosing the _Edit Flag_ button in the toolbar.
-4. Go to _Strategy_ section, _Direct Delivery_ sub-section and choose the button with '+' sign.
-5. Select _Var. 3_ from the combobox and enter _friends-and-family_ in the text input.
-6. Choose _Save_.
-
-### 19. Evaluate the String Feature Flag Using Identifier
-
-> **Note**: Expect the variation to be _variation-for-friends-and-family_.
+> **Note**: Expect the variation to be *variation-when-active*.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Enter the string feature flag name in the _Feature Flag Name_ field,
-enter _friends-and-family_ in the _Identifier (optional)_ field and choose _Evaluate_.
-3. Evaluate the feature flag.
-The result should state that the feature flag is of type _STRING_ and its variation is _variation-for-friends-and-family_.
+2. Evaluate the string feature flag by entering its slug, name and your visitor ID.
+   The result should state that the feature flag is of type *STRING* and its variation is *variation-when-active*.
 
-> **Note**: Once direct delivery is configured, Feature Flags service requires providing an identifier.
-An error is returned if such is not present.
-Variation _variation-when-active_ is returned for all identifiers
-except those explicitly configured in the Feature Flags dashboard
-for which the provided rules apply (like for the _friends-and-family_ identifier).
+### 18. Specify direct delivery strategy of a variation of the string flag
+
+1. Open the Feature Flags dashboard as described [here](#accessing-flagship-ui).
+2. Go to **Dashboard** from the Sidebar.
+3. Select the Project and click on *Edit* Use Case.
+4. Go to **Scenarios**.
+5. Change the targeting from *All users* to *Users by ID*,
+   chose operator *Is*, enter visitor ID e.g. *special-visitor-1* and
+   change the value of the flag to *variation-when-special*
+6. Create new scenario with targeting *Users by ID*, chose operator *Is not*,
+   enter the same visitor ID from the previous step and set the same flag key and type,
+   then set the value to *variation-when-normal*.
+7. Save
+
+### 19. Evaluate the string Feature Flag using identifier
+
+> **Note**: Expect the variation to be *variation-when-special*.
+
+1. Open the demo application as described [here](#accessing-the-demo-application).
+2. Evaluate the string feature flag by entering its slug, name and your visitor ID.
+   The result should state that the feature flag is of type *STRING* and its variation is *variation-when-special*.
