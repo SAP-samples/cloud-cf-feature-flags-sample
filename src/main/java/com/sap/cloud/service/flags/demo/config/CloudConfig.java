@@ -12,11 +12,11 @@ import com.sap.cloud.service.flags.demo.service.FeatureFlagsService;
 
 /**
  * Represents a configuration class for creating {@link FeatureFlagsService}
- * instance for both cloud and local environment.
+ * instance for cloud environment.
  */
 
 @Configuration
-@Profile({ "cloud", "default" })
+@Profile({ "cloud" })
 public class CloudConfig extends AbstractCloudConfig {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CloudConfig.class);
@@ -24,10 +24,10 @@ public class CloudConfig extends AbstractCloudConfig {
 	private static final String NO_FEATURE_FLAGS_SERVICE_INSTANCE_FOUND_MESSAGE = "There is no Feature Flags service instance bound to the application.";
 
 	/**
-	 * Creates a {@link FeatureFlagsService} for both cloud and local
+	 * Creates a {@link FeatureFlagsService} for cloud
 	 * environment. If there is no Feature Flags instance bound to the
-	 * application in the cloud, then {@code null} is returned.
-	 * 
+	 * application, then {@code null} is returned.
+	 *
 	 * @return instance of {@link FeatureFlagsService}
 	 */
 
