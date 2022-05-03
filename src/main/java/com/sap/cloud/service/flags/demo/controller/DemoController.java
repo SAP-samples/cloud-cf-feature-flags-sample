@@ -53,6 +53,8 @@ public class DemoController {
 	 *
 	 * @param id
 	 *            - ID of the feature flag
+	 * @param identifier
+	 * 						- optional identifier for evaluating the feature flag
 	 * @param modelMap
 	 *            - the {@link ModelMap}
 	 *

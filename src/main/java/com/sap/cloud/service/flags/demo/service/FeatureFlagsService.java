@@ -16,10 +16,10 @@ public class FeatureFlagsService {
 	private LDClient ldClient;
 
 	/**
-	 * Constructs a new {@link QuotaCheck} object with given {@link LDClient}.
+	 * Constructs a new {@link FeatureFlagsService} object with given {@link LDClient}.
 	 *
-	 * @param sdkKey
-	 *            - SDK key for LaunchDarkly
+	 * @param client
+	 *            - LaunchDarkly SDK client {@link LDClient}
 	 */
 
 	public FeatureFlagsService(final LDClient client) {
@@ -31,6 +31,8 @@ public class FeatureFlagsService {
 	 *
 	 * @param id
 	 *            - ID of the feature flag
+	 * @param identifier
+	 * 						- optional identifier for evaluating the feature flag
 	 * @return the feature flag
 	 */
 
