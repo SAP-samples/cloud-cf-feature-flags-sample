@@ -47,7 +47,7 @@ Follow these steps to run the Flagship Demo application on SAP Cloud Platform, C
 - [16. Enable the string Feature Flag](#16-enable-the-string-feature-flag)
 - [17. Verify that the string Feature Flag is enabled](#17-verify-that-the-string-feature-flag-is-enabled)
 - [18. Specify direct delivery strategy of a variation of the string flag](#18-specify-direct-delivery-strategy-of-a-variation-of-the-string-flag)
-- [19. Evaluate the string Feature Flag using identifier](#19-evaluate-the-string-feature-flag-using-identifier)
+- [19. Evaluate the string Feature Flag](#19-evaluate-the-string-feature-flag)
 
 <!-- tocstop -->
 
@@ -215,11 +215,11 @@ Those two will be required in the demo application in order to evaluate a flag.
 ### 12. Enable the boolean Feature Flag
 
 1. Open the Flagship UI as described [here](#accessing-flagship-ui).
-2. Go to **Dashboard** from the Sidebar
-3. Select the Project and click on *Edit* Use Case
-4. Go to **Scenarios**
-5. Change the flag value to true
-6. Save
+2. Go to **Dashboard** from the Sidebar.
+3. Select the Project and click on *Edit* Use Case.
+4. Go to **Scenarios**.
+5. Change the flag value to true.
+6. Save.
 
 ### 13. Verify that the boolean Feature Flag is enabled
 
