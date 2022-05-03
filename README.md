@@ -138,7 +138,7 @@ $ cf restage feature-flags-demo
 > **Note**: Expect to receive the injected environment variables.
 
 ```bash
-$ curl https://feature-flags-service-demo.cfapps.sap.hana.ondemand.com/vcap_services
+$ curl https://feature-flags-demo.cfapps.sap.hana.ondemand.com/vcap_services
 ```
 
 Sample JSON response:
@@ -177,7 +177,9 @@ An *Evaluation Form* opens.
 ### Accessing Flagship UI
 
 The Flagship UI will be accessed multiple times throughout this tutorial.
-Login to Flagship and select an Environment and Account from the header.
+Login to Flagship and select an Account and Environment from the header.
+The unique identifier of a flag is the combination of Use Case slug + flag key.
+Those two will be required in the demo application in order to evaluate a flag.
 
 ### 9. Evaluate a missing Feature Flag
 
@@ -194,25 +196,25 @@ Login to Flagship and select an Environment and Account from the header.
 ### 10. Create a new boolean Feature Flag
 
 1. Open the Flagship UI as described [here](#accessing-flagship-ui).
-2. Go to **Dashboard** from the Sidebar
-3. Select a Project and click on *Create a use case*
-4. Chose the **Toggle** template
-5. Enter name, description and slug and click on **Save and continue**
+2. Go to **Dashboard** from the Sidebar.
+3. Select a Project and click on *Create a use case*.
+4. Chose the **Toggle** template.
+5. Enter name, description and slug and click on **Save and continue**.
 6. Give a name to the default scenario, make sure **All users** are targeted and
-   give key, type(Boolean) and value(false) to flag and click on **Save and continue**
-7. Lastly, go back to **Dashboard** and enable the flag
+   give key, type(Boolean) and value(false) to flag and click on **Save and continue**.
+7. Lastly, go back to **Dashboard** and enable the flag.
 
 ### 11. Evaluate the newly created boolean Feature Flag
 
 > **Note**: Expect the variation to be false.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Evaluate the boolean feature flag by entering its slug, name and your visitor ID.
-   The result should state that the feature flag is of type *BOOLEAN* and its variation is *false*.
+2. Evaluate the boolean feature flag by entering its slug, key and your visitor ID.
+   The result should state that the feature flag is of type *BOOLEAN* and its value is *false*.
 
 ### 12. Enable the boolean Feature Flag
 
-1. Open the Feature Flags dashboard as described [here](#accessing-flagship-ui).
+1. Open the Flagship UI as described [here](#accessing-flagship-ui).
 2. Go to **Dashboard** from the Sidebar
 3. Select the Project and click on *Edit* Use Case
 4. Go to **Scenarios**
@@ -224,48 +226,48 @@ Login to Flagship and select an Environment and Account from the header.
 > **Note**: Expect the feature flag to be enabled.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Evaluate the boolean feature flag by entering its slug, name and your visitor ID.
-   The result should state that the feature flag is of type *BOOLEAN* and its variation is *true*.
+2. Evaluate the boolean feature flag by entering its slug, key and your visitor ID.
+   The result should state that the feature flag is of type *BOOLEAN* and its value is *true*.
 
 ### 14. Create a new string Feature Flag
 
-1. Open the Feature Flags dashboard as described [here](#accessing-flagship-ui).
-2. Go to **Dashboard** from the Sidebar
-3. Select a Project and click on *Create a use case*
-4. Chose the **Toggle** template
-5. Enter name, description and slug and click on **Save and continue**
+1. Open the Flagship UI as described [here](#accessing-flagship-ui).
+2. Go to **Dashboard** from the Sidebar.
+3. Select a Project and click on *Create a use case*.
+4. Chose the **Toggle** template.
+5. Enter name, description and slug and click on **Save and continue**.
 6. Give a name to the default scenario, make sure **All users** are targeted and
-   give key, type(Text) and value(variation-when-inactive) to flag and click on **Save and continue**
-7. Lastly, go back to **Dashboard** and enable the flag
+   give key, type(Text) and value(variation-when-inactive) to flag and click on **Save and continue**.
+7. Lastly, go back to **Dashboard** and enable the flag.
 
 ### 15. Evaluate the newly created string Feature Flag
 
 > **Note**: Expect the variation to be *variation-when-inactive*.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Evaluate the string feature flag by entering its slug, name and your visitor ID.
-   The result should state that the feature flag is of type *STRING* and its variation is *variation-when-inactive*.
+2. Evaluate the string feature flag by entering its slug, key and your visitor ID.
+   The result should state that the feature flag is of type *STRING* and its value is *variation-when-inactive*.
 
 ### 16. Enable the string Feature Flag
 
-1. Open the Feature Flags dashboard as described [here](#accessing-flagship-ui).
+1. Open the Flagship UI as described [here](#accessing-flagship-ui).
 2. Go to **Dashboard** from the Sidebar.
 3. Select the Project and click on *Edit* Use Case.
 4. Go to **Scenarios**.
 5. Change the flag value to *variation-when-active*.
-6. Save
+6. Save.
 
 ### 17. Verify that the string Feature Flag is enabled
 
 > **Note**: Expect the variation to be *variation-when-active*.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Evaluate the string feature flag by entering its slug, name and your visitor ID.
-   The result should state that the feature flag is of type *STRING* and its variation is *variation-when-active*.
+2. Evaluate the string feature flag by entering its slug, key and your visitor ID.
+   The result should state that the feature flag is of type *STRING* and its value is *variation-when-active*.
 
 ### 18. Specify direct delivery strategy of a variation of the string flag
 
-1. Open the Feature Flags dashboard as described [here](#accessing-flagship-ui).
+1. Open the Flagship UI as described [here](#accessing-flagship-ui).
 2. Go to **Dashboard** from the Sidebar.
 3. Select the Project and click on *Edit* Use Case.
 4. Go to **Scenarios**.
@@ -275,12 +277,14 @@ Login to Flagship and select an Environment and Account from the header.
 6. Create new scenario with targeting *Users by ID*, chose operator *Is not*,
    enter the same visitor ID from the previous step and set the same flag key and type,
    then set the value to *variation-when-normal*.
-7. Save
+7. Save.
 
-### 19. Evaluate the string Feature Flag using identifier
+### 19. Evaluate the string Feature Flag
 
 > **Note**: Expect the variation to be *variation-when-special*.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Evaluate the string feature flag by entering its slug, name and your visitor ID.
-   The result should state that the feature flag is of type *STRING* and its variation is *variation-when-special*.
+2. Evaluate the string feature flag by entering its slug, key and *special-visitor-1* for visitor ID.
+   The result should state that the feature flag is of type *STRING* and its value is *variation-when-special*.
+3. Evaluate the string feature flag by entering its slug, key and any visitor ID other than *special-visitor-1*.
+   The result should state that the feature flag is of type *STRING* and its value is *variation-when-normal*.
