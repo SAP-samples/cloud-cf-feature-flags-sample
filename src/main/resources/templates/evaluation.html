@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="layout">
 <head></head>
 <body>
@@ -8,28 +8,35 @@
       <div class="row" style="margin-bottom: 2em">
         <div align="center" class="col-lg-12">
           <h1>Evaluation Result</h1>
-          <div th:switch="${status}">
-            <div th:case="'missing-service-instance'" class="alert alert-dismissible alert-danger">
+          <div th:switch="${credentialsAvailable}">
+            <div th:case="false" class="alert alert-dismissible alert-danger">
               There is no Feature Flags service instance bound to the application. Try to create one and bind it to this application.
             </div>
-            <div th:case="'missing'" class="alert alert-dismissible alert-warning">
-              <strong>Not found!</strong>
-              Feature flag with name <strong>[[${id}]]</strong> is <strong>missing</strong>. Try to create it using the Feature Flags Service dashboard!
-            </div>
-            <div th:case="'disabled'" class="alert alert-dismissible alert-danger">
-              <strong>Switched off!</strong>
-              Feature flag with name <strong>[[${id}]]</strong> is <strong>disabled</strong>. Try to enable it using the Feature Flags Service dashboard!
-            </div>
-            <div th:case="'enabled'" class="alert alert-dismissible alert-success">
-              <strong>Switched on!</strong>
-              Feature flag with name <strong>[[${id}]]</strong> is <strong>enabled</strong>. Use the Feature Flags Service dashboard to toggle it!
+            <div th:case="true">
+              <div th:if="${backendError}" class="alert alert-dismissible alert-danger">[[${backendError}]]</div>
+              <div th:switch="${flagAvailable}">
+                <div th:case="false" class="alert alert-dismissible alert-warning">
+                  <strong>Not found!</strong>
+                  Feature flag with name <strong>[[${id}]]</strong> is <strong>missing</strong>. Try to create it using the Feature Flags Service dashboard!
+                </div>
+              <div th:case="true">
+                <div>
+                  Feature flag with name <strong>[[${id}]]</strong>.
+                </div>
+                <div>
+                  Type is <strong>[[${type}]]</strong>.
+                </div>
+                <div>
+                  Variation is <strong>[[${variation}]]</strong>.
+                </div>
+              </div>
             </div>
           </div>
         </div>
         <div align="right">
-			<span class="btn-group">
-				<a id="back_button" class="btn btn-primary" href="/"><span class="glyphicon glyphicon-share-alt"></span> Go back</a>
-			</span>
+          <span class="btn-group">
+            <a id="back_button" class="btn btn-primary" href="/"><span class="glyphicon glyphicon-share-alt"></span> Go back</a>
+          </span>
         </div>
       </div>
     </div>
