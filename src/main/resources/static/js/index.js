@@ -1,17 +1,18 @@
 $(document).ready(function () {
-    var evaluationAnchor = $('#evaluation-anchor');
+    var evaluationForm = $('#evaluation-form');
 
-    evaluationAnchor.click(function (event) {
-        var name = $('#feature-flag-name-input').val();
-        var identifier = $('#feature-flag-identifier-input').val();
-        var href = `/evaluate/${name}?identifier=${identifier}`;
-        evaluationAnchor.attr('href', href);
+    evaluationForm.submit(function (event) {
+        event.preventDefault();
+        var campaign = $('#flagship-campaign-input').val();
+        var flagName = $('#flagship-flag-name-input').val();
+        var visitorId = $('#flagship-visitor-id-input').val();
+        var evaluateUrl = `${window.location.origin}/evaluate/?campaign=${campaign}&flagName=${flagName}&visitorId=${visitorId}`;
+        window.location.replace(evaluateUrl);
     });
 
     $(document).keypress(function (event) {
         if(event.which == 13) { // Enter key
-            event.preventDefault();
-            evaluationAnchor[0].click();
+            evaluationForm.submit();
         }
     });
 });

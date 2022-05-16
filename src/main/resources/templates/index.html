@@ -8,19 +8,26 @@
       <div class="row" style="margin-bottom: 2em">
         <div align="center" class="col-lg-12">
           <h1>Evaluation Form</h1>
-          <form class="bs-component" style="width: 60%">
+          <form id="evaluation-form" class="bs-component" style="width: 60%">
             <div class="form-group">
               <div class="input-group">
-                <input type="text" class="form-control" id="feature-flag-name-input" placeholder="Feature Flag Name" size="50"/>
+                <input type="text" class="form-control" id="flagship-campaign-input" placeholder="Flagship Campaign (slug)" required size="50"/>
               </div>
             </div>
             <div class="form-group">
               <div class="input-group">
-                <input type="text" class="form-control" id="feature-flag-identifier-input" placeholder="Identifier (optional)" size="50"/>
+                <input type="text" class="form-control" id="flagship-flag-name-input" placeholder="Flag Key" required size="50"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="input-group">
+                <input type="text" class="form-control" id="flagship-visitor-id-input" placeholder="Visitor ID" required size="50"/>
               </div>
             </div>
             <span class="input-group-btn">
-              <a id="evaluation-anchor" class="btn btn-primary" href="/"><span class="glyphicon glyphicon-equalizer"></span> Evaluate</a>
+              <button id="evaluation-btn" class="btn btn-primary" type="submit">
+                <span class="glyphicon glyphicon-equalizer"></span>Evaluate
+              </button>
             </span>
           </form>
         </div>
