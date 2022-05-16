@@ -206,7 +206,7 @@ Those two will be required in the demo application in order to evaluate a flag.
 
 ### 11. Evaluate the newly created boolean Feature Flag
 
-> **Note**: Expect the variation to be false.
+> **Note**: Expect the value to be false.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
 2. Evaluate the boolean feature flag by entering its slug, key and your visitor ID.
@@ -223,7 +223,7 @@ Those two will be required in the demo application in order to evaluate a flag.
 
 ### 13. Verify that the boolean Feature Flag is enabled
 
-> **Note**: Expect the feature flag to be enabled.
+> **Note**: Expect the value to be true.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
 2. Evaluate the boolean feature flag by entering its slug, key and your visitor ID.
