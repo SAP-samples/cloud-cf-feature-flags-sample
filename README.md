@@ -2,27 +2,27 @@
 
 # Feature Flags Service Demo Application
 
-Feature Flags service Demo Application is a simple Spring Boot application that consumes the [Feature Flags service](https://help.sap.com/viewer/2250efa12769480299a1acd282b615cf/Cloud/en-US) on SAP Cloud Platform, Cloud Foundry environment. It implements a [feature toggle](https://en.wikipedia.org/wiki/Feature_toggle) (evaluation call to the Feature Flags service) and exposes this feature toggle through a Web user interface. There is also one REST end-point that reads the value of `VCAP_SERVICES` environment variable.
+Feature Flags service Demo Application is a simple Spring Boot application that consumes the [Feature Flags service](https://help.sap.com/viewer/2250efa12769480299a1acd282b615cf/Cloud/en-US) on SAP BTP, Cloud Foundry environment. It implements a [feature toggle](https://en.wikipedia.org/wiki/Feature_toggle) (evaluation call to the Feature Flags service) and exposes this feature toggle through a Web user interface. There is also one REST end-point that reads the value of `VCAP_SERVICES` environment variable.
 
 ## Prerequisites
 
 * have set up [Maven 3.0.x](http://maven.apache.org/install.html)
-* have an [SAP Cloud Platform trial account on Cloud Foundry environment](https://help.sap.com/products/BTP/65de2977205c403bbc107264b8eccf4b/e50ab7b423f04a8db301d7678946626e.html)
+* have an [SAP BTP trial account on Cloud Foundry environment](https://help.sap.com/products/BTP/65de2977205c403bbc107264b8eccf4b/e50ab7b423f04a8db301d7678946626e.html)
 * have a [trial space on a Cloud Foundry instance](https://help.sap.com/products/BTP/65de2977205c403bbc107264b8eccf4b/fa5deb9cc4be4ca58070456cd2c47647.html#loioe9aed07891e545dd88192df013646897)
 * have set up a [curl](https://curl.haxx.se/download.html) plug-in for cmd
 * have [installed cf CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
 
-## Running the Application on SAP Cloud Platform
+## Running the Application on SAP BTP
 
-Follow these steps to run the Feature Flags Service Demo application on SAP Cloud Platform, Cloud Foundry environment.
+Follow these steps to run the Feature Flags Service Demo application on SAP BTP, Cloud Foundry environment.
 
-> **Note:** This guide uses the Cloud Foundry trial account on Europe (Frankfurt) region (https://account.hanatrial.ondemand.com/cockpit#/home/overview). If you want to use a different region, you have to modify the domain in the requests. For more information about regions and hosts on SAP Cloud Platform, Cloud Foundry environment, see [Regions and Hosts](https://help.sap.com/viewer/65de2977205c403bbc107264b8eccf4b/Cloud/en-US/350356d1dc314d3199dca15bd2ab9b0e.html).
+> **Note:** This guide uses the Cloud Foundry trial account on Europe (Frankfurt) region (https://account.hanatrial.ondemand.com/cockpit#/home/overview). If you want to use a different region, you have to modify the domain in the requests. For more information about regions and hosts on SAP BTP, Cloud Foundry environment, see [Regions and Hosts](https://help.sap.com/viewer/65de2977205c403bbc107264b8eccf4b/Cloud/en-US/350356d1dc314d3199dca15bd2ab9b0e.html).
 
 <!-- toc -->
 
 - [1. Build the feature-flags-demo Application](#1-build-the-feature-flags-demo-application)
 - [2. Edit application name in manifest file](#2-edit-application-name-in-manifest-file)
-- [3. Deploy feature-flags-demo on SAP Cloud Platform](#3-deploy-feature-flags-demo-on-sap-cloud-platform)
+- [3. Deploy feature-flags-demo on SAP BTP](#3-deploy-feature-flags-demo-on-sap-cloud-platform)
 - [4. Create a Service Instance of Feature Flags service](#4-create-a-service-instance-of-feature-flags-service)
   * [4.1 Ensure the `feature-flags` Service Exists in the Marketplace](#41-ensure-the-feature-flags-service-exists-in-the-marketplace)
   * [4.2 Create a Service Instance of Feature Flags with Plan `standard`](#42-create-a-service-instance-of-feature-flags-with-plan-standard)
@@ -66,7 +66,7 @@ Due to CloudFoundry's limitiation in regards to application naming it's quite po
 > **Note:** Use the modified value in the commands which require application name (e.g. cf bind-service)
 and when requesting the application in the browser or via curl.
 
-### 3. Deploy feature-flags-demo on SAP Cloud Platform
+### 3. Deploy feature-flags-demo on SAP BTP
 
     $ cf api https://api.cf.eu10.hana.ondemand.com
     $ cf login
@@ -95,7 +95,7 @@ and when requesting the application in the browser or via curl.
     Creating service instance feature-flags-instance in org <ORG_ID> / space dev as <USER_ID>...
     OK
 
-> **Note:** Alternatively, you can also use the SAP Cloud Platform Cockpit. See [Create a Service Instance](https://help.sap.com/viewer/2250efa12769480299a1acd282b615cf/Cloud/en-US/c7b30b5bf54149148d2302617917dc3e.html).
+> **Note:** Alternatively, you can also use the SAP BTP Cockpit. See [Create a Service Instance](https://help.sap.com/viewer/2250efa12769480299a1acd282b615cf/Cloud/en-US/c7b30b5bf54149148d2302617917dc3e.html).
 
 
 ### 5. Call the feature-flags-demo Application's /vcap_services End-Point
@@ -104,7 +104,7 @@ and when requesting the application in the browser or via curl.
 
 The /vcap_services end-point simply returns the content of  _VCAP_SERVICES_ environment variable. As for now there is no service instances bound to `feature-flags-demo`, so you will receive an empty JSON.
 
-In the command you use the following URL: \<application_URL\>/vcap_services. You can find the \<application_URL\> in the SAP Cloud Platform Cockpit, in the _feature-flag-demo > Overview > Application Routes_.
+In the command you use the following URL: \<application_URL\>/vcap_services. You can find the \<application_URL\> in the SAP BTP Cockpit, in the _feature-flag-demo > Overview > Application Routes_.
 
     $ curl https://feature-flags-demo.cfapps.eu10.hana.ondemand.com/vcap_services
 
@@ -117,7 +117,7 @@ In the command you use the following URL: \<application_URL\>/vcap_services. You
     OK
     TIP: Use 'cf restage feature-flags-demo' to ensure your env variable changes take effect
 
-> **Note:** Alternatively, you can also use the SAP Cloud Platform Cockpit. See [Bind Your Application to the Feature Flags Service Instance](https://help.sap.com/viewer/2250efa12769480299a1acd282b615cf/Cloud/en-US/e7ef0ce6d4b14ae387de5bb18549c250.html).
+> **Note:** Alternatively, you can also use the SAP BTP Cockpit. See [Bind Your Application to the Feature Flags Service Instance](https://help.sap.com/viewer/2250efa12769480299a1acd282b615cf/Cloud/en-US/e7ef0ce6d4b14ae387de5bb18549c250.html).
 
 ### 7. Restage feature-flags-demo
 
@@ -165,14 +165,14 @@ Sample JSON response:
 ### Accessing the Demo Application
 
 The web interface of the demo application will be accessed multiple times throughout this tutorial.
-Here is how to open it: navigate to feature-flags-demo application overview in the SAP Cloud Platform Cockpit.
+Here is how to open it: navigate to feature-flags-demo application overview in the SAP BTP Cockpit.
 Open the link from the _Application Routes_ section (for example, https://feature-flags-demo.cfapps.eu10.hana.ondemand.com).
 An _Evaluation Form_ opens.
 
 ### Accessing the Feature Flags Dashboard
 
 The Feature Flags dashboard will be accessed multiple times throughout this tutorial.
-Here is how to open it via the SAP Cloud Platform Cockpit: navigate to your subaccount,
+Here is how to open it via the SAP BTP Cockpit: navigate to your subaccount,
 subscribe to the Feature Flags dashboard via creating an instance of the Feature Flags service, plan _dashboard_ if haven't done so already.
 Access Feature Flags dashboard from the list of subscribed applications.
 Select the service instance you are currently working with.
