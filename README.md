@@ -2,9 +2,11 @@
 
 # Feature Flags Service Demo Application
 
+## Description
+
 Feature Flags service Demo Application is a simple Spring Boot application that consumes the [Feature Flags service](https://help.sap.com/viewer/2250efa12769480299a1acd282b615cf/Cloud/en-US) on SAP BTP, Cloud Foundry environment. It implements a [feature toggle](https://en.wikipedia.org/wiki/Feature_toggle) (evaluation call to the Feature Flags service) and exposes this feature toggle through a Web user interface. There is also one REST end-point that reads the value of `VCAP_SERVICES` environment variable.
 
-## Prerequisites
+## Requirements
 
 * have set up [Maven 3.0.x](http://maven.apache.org/install.html)
 * have an [SAP BTP trial account on Cloud Foundry environment](https://help.sap.com/products/BTP/65de2977205c403bbc107264b8eccf4b/e50ab7b423f04a8db301d7678946626e.html)
@@ -277,3 +279,13 @@ An error is returned if such is not present.
 Variation _variation-when-active_ is returned for all identifiers
 except those explicitly configured in the Feature Flags dashboard
 for which the provided rules apply (like for the _friends-and-family_ identifier).
+
+## Contributing
+
+Refer to the [contrubuting guideline](/CONTRIBUTING.md).
+
+## Code of Conduct
+Refer to the [SAP Open Source Code of Conduct](https://github.com/SAP-samples/.github/blob/main/CODE_OF_CONDUCT.md).
+
+## Licensing
+See [LICENSE](/LICENSE) file.
