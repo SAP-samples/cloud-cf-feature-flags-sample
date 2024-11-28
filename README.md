@@ -32,7 +32,7 @@ Follow the steps below to run `Feature Flags Demo Application` on SAP BTP, Cloud
 [3. Deploy feature-flags-demo on SAP BTP](#3-deploy-feature-flags-demo-on-sap-cloud-platform)
 
 [4. Create a Service Instance of Feature Flags service](#4-create-a-service-instance-of-feature-flags-service)
-  * [Ensure the `feature-flags` Service Exists in the Marketplace](#41-ensure-the-feature-flags-service-exists-in-the-marketplace)
+  * [Ensure the feature-flags service exists in the Service Marketplace](#41-ensure-the-feature-flags-service-exists-in-the-marketplace)
   * [Create a Service Instance of Feature Flags with Plan `standard`](#42-create-a-service-instance-of-feature-flags-with-plan-standard)
 
 [5. Call the feature-flags-demo Application's /vcap_services End-Point](#5-call-the-feature-flags-demo-applications-vcap_services-end-point)
@@ -41,7 +41,7 @@ Follow the steps below to run `Feature Flags Demo Application` on SAP BTP, Cloud
 
 [7. Restage feature-flags-demo](#7-restage-feature-flags-demo)
 
-[8. Ensure that feature-flags-instance is Bound to feature-flags-demo](#8-ensure-that-feature-flags-instance-is-bound-to-feature-flags-demo)
+[8. Ensure that feature-flags-instance is bound to feature-flags-demo](#8-ensure-that-feature-flags-instance-is-bound-to-feature-flags-demo)
   * [Accessing the Demo Application](#accessing-the-demo-application)
   * [Accessing the Feature Flags Dashboard](#accessing-the-feature-flags-dashboard)
 
@@ -71,40 +71,42 @@ Follow the steps below to run `Feature Flags Demo Application` on SAP BTP, Cloud
 
 ### 1. Build the feature-flags-demo Application
 
-Run th following commands, consequently:
+Run the following commands, consequently:
 
     $ git clone git@github.com:SAP/cloud-cf-feature-flags-sample.git
     $ cd cloud-cf-feature-flags-sample
     $ mvn clean install
 
-> **Note:** Alternatively, you can use the Eclipse IDE by choosing the `clean install` goal from _Run As > Maven Build..._ menu.
+> **Note:** Alternatively, you can use the Eclipse IDE. Choose the `clean install` goal from the _Run As > Maven Build..._ menu.
 
 ### 2. Edit application name in manifest file
 
-Due to CloudFoundry's limitiation in regards to application naming it's quite possible for someone to have already deployed the Feature Flags demo application with the **feature-flags-demo** name as it is currently set in the **manifest.yml** file. CloudFoundry will not allow another application with the same name to be deployed, so you **MUST** edit the manifest file and change the application name before deploying. For example:
+It's quite possible that someone else has already deployed the `Feature Flags Demo Application` with the name **feature-flags-demo** (as it is currently set in the `manifest.yml` file). 
+Cloud Foundry does not allow two applications with the same name to be deployed in the same region! Therefore, we **highly recommend** that you change the application name in the `manifest.yml` file before deploying. For example:
 
     ---
     applications:
     - name: feature-flags-demo123
       path: target/feature-flags-demo.jar
 
-> **Note:** Use the modified value in the commands which require application name (e.g. cf bind-service)
-and when requesting the application in the browser or via curl.
+💡**NOTE:** Use the modified value in all commands that require application name, as well as when requesting the application in a browser or via `curl`.
 
 ### 3. Deploy feature-flags-demo on SAP BTP
 
-    $ cf api https://api.cf.eu10.hana.ondemand.com
+Run the following commands, consequently:
+
+    $ cf api https://api.cf.eu20.hana.ondemand.com
     $ cf login
     $ cf push
 
 ### 4. Create a Service Instance of Feature Flags service
 
-#### 4.1 Ensure the `feature-flags` Service Exists in the Marketplace
+#### 4.1 Ensure the feature-flags service exists in the Service Marketplace
 
     $ cf marketplace
 
     -----
-    Getting services from marketplace in org <ORG_ID> / space dev as <USER_ID>...
+    Getting services from marketplace in org <ORG_ID> / space <SPACE> as <USER_ID>...
     OK
     service          	plans    	description
     ...
@@ -117,32 +119,36 @@ and when requesting the application in the browser or via curl.
     $ cf create-service feature-flags standard feature-flags-instance
 
     -----
-    Creating service instance feature-flags-instance in org <ORG_ID> / space dev as <USER_ID>...
+    Creating service instance feature-flags-instance in org <ORG_ID> / space <SPACE> as <USER_ID>...
     OK
 
-> **Note:** Alternatively, you can also use the SAP BTP Cockpit. See [Create a Service Instance](https://help.sap.com/viewer/2250efa12769480299a1acd282b615cf/Cloud/en-US/c7b30b5bf54149148d2302617917dc3e.html).
+> **Note:** Alternatively, you can use the SAP BTP cockpit. See [Create a Service Instance](https://help.sap.com/docs/feature-flags-service/sap-feature-flags-service/initial-setup#loioc7b30b5bf54149148d2302617917dc3e).
 
 
 ### 5. Call the feature-flags-demo Application's /vcap_services End-Point
 
-> **Note**: Expect to receive an empty JSON.
+> **Note**: Expect to receive an empty JSON code - {}.
 
-The /vcap_services end-point simply returns the content of  _VCAP_SERVICES_ environment variable. As for now there is no service instances bound to `feature-flags-demo`, so you will receive an empty JSON.
+The `/vcap_services` end-point simply returns the content of the _VCAP_SERVICES_ environment variable. As for now, there is no service instances bound to `feature-flags-demo`, thus you receive an empty JSON.
 
-In the command you use the following URL: \<application_URL\>/vcap_services. You can find the \<application_URL\> in the SAP BTP Cockpit, in the _feature-flag-demo > Overview > Application Routes_.
+In the command you use the following URL: `\<application_URL\>/vcap_services`. 
 
-    $ curl https://feature-flags-demo.cfapps.eu10.hana.ondemand.com/vcap_services
+To find the value of `\<application_URL\>`, go to the SAP BTP cockpit > **feature-flag-demo** > **Overview** > **Application Routes**.
+
+To call the application, run (for example):
+
+    $ curl https://feature-flags-demo.cfapps.eu20.hana.ondemand.com/vcap_services
 
 ### 6. Bind feature-flags-demo to feature-flags-instance
 
     $ cf bind-service feature-flags-demo feature-flags-instance
 
     -----
-    Binding service feature-flags-instance to app feature-flags-demo in org <ORG_ID> / space dev as <USER_ID>...
+    Binding service feature-flags-instance to app feature-flags-demo in org <ORG_ID> / space <SPACE> as <USER_ID>...
     OK
     TIP: Use 'cf restage feature-flags-demo' to ensure your env variable changes take effect
 
-> **Note:** Alternatively, you can also use the SAP BTP Cockpit. See [Bind Your Application to the Feature Flags Service Instance](https://help.sap.com/viewer/2250efa12769480299a1acd282b615cf/Cloud/en-US/e7ef0ce6d4b14ae387de5bb18549c250.html).
+> **Note:** Alternatively, you can use the SAP BTP cockpit. See [Bind Your Application to the SAP Feature Flags Service Instance](https://help.sap.com/docs/feature-flags-service/sap-feature-flags-service/initial-setup#loioe7ef0ce6d4b14ae387de5bb18549c250).
 
 ### 7. Restage feature-flags-demo
 
@@ -150,7 +156,7 @@ Restage `feature-flags-demo` application so the changes in the application envir
 
     $ cf restage feature-flags-demo
 
-### 8. Ensure that feature-flags-instance is Bound to feature-flags-demo
+### 8. Ensure that feature-flags-instance is bound to feature-flags-demo
 
 > **Note**: Expect to receive the injected environment variables by the Feature Flags service.
 
@@ -169,9 +175,9 @@ Sample JSON response:
           "clientid": "...",
           "...": "..."
         },
-        "password": "aa_GgZf1GIDZbuXV9s0RknzRE+qs0e=",
-        "uri": "https://feature-flags.cfapps.eu10.hana.ondemand.com",
-        "username": "sbss_x324osjl//pmabsuskr6nshmb2arw6dld4hfb3cj4m2bonkqmm3ts6c68mdpzxz2fma="
+        "password": "aa_12345678XYZZZZZ000mnopRE+qs0e=",
+        "uri": "https://feature-flags.cfapps.eu20.hana.ondemand.com",
+        "username": "sbss_x234osj//pmabsuskr6nshmb2arw6dld4hfb3cj4m2bonkqmm3ts6c68mdpzxz2fma="
       },
       "syslog_drain_url": null,
       "volume_mounts": [ ],
@@ -189,119 +195,132 @@ Sample JSON response:
 
 ### Accessing the Demo Application
 
-The web interface of the demo application will be accessed multiple times throughout this tutorial.
-Here is how to open it: navigate to feature-flags-demo application overview in the SAP BTP Cockpit.
-Open the link from the _Application Routes_ section (for example, https://feature-flags-demo.cfapps.eu10.hana.ondemand.com).
-An _Evaluation Form_ opens.
+The web interface of the demo application will be accessed multiple times throughout this tutorial. Here is how to open it: 
+
+1. Go to the SAP BTP cockpit.
+2. Navigate to the `feature-flags-demo` application overview.
+3. Open the link from the **Application Routes** section. For example: `https://feature-flags-demo-happy-bear.cfapps.eu20.hana.ondemand.com`
+4. The **Evaluation Form** opens.
 
 ### Accessing the Feature Flags Dashboard
 
-The Feature Flags dashboard will be accessed multiple times throughout this tutorial.
-Here is how to open it via the SAP BTP Cockpit: navigate to your subaccount,
-subscribe to the Feature Flags dashboard via creating an instance of the Feature Flags service, plan _dashboard_ if haven't done so already.
-Access Feature Flags dashboard from the list of subscribed applications.
-Select the service instance you are currently working with.
+The `Feature Flags Dashboard` will be accessed multiple times throughout this tutorial. Here is how to open it: 
 
-The dashboard could be accessed directly via URL like https://<subdomain\>.feature-flags-dashboard.cfapps.eu10.hana.ondemand.com/manageinstances/<instance-id\>.
-The instance ID is a unique ID of the service instance.
+1. Go to the SAP BTP cockpit.
+2. Navigate to your subaccount.
+3. Create a subscription to **Feature Flags Dashboard**. To do that, create an instance of the Feature Flags service, with plan `dashboard`.
+4. Access **Feature Flags Dashboard** from the list of subscribed applications.
+5. Select the service instance you are currently working with.
+
+💡**NOTE:** The dashboard URL always has the following pattern: 
+
+`https://<subdomain\>.feature-flags-dashboard.cfapps.eu20.hana.ondemand.com/manageinstances/<instance-id\>`
+
+> The <instance-id> is a unique ID of your Feature Flag service instance.
 
 ### 9. Evaluate a Missing Feature Flag
 
 > **Note**: Expect the feature flag to be missing.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Evaluate a feature flag with random name (for example, type in 'my-boolean-flag').
-The result should state that the feature flag with the given name is missing.
+2. Enter a feature flag with a random name, for example `my-boolean-flag`.
+3. Choose **Evaluate**.
+4. The result should state that a feature flag with this name is missing.
 
 ### 10. Create a New Boolean Feature Flag
 
-1. Open the Feature Flags dashboard as described [here](#accessing-the-feature-flags-dashboard).
-2. Choose _New Flag_.
-3. Fill in the required fields (for example, 'my-boolean-flag' for _Name_, 'Super cool feature' for _Description_ and 'OFF' for _State_).
-4. Choose _Save_.
+1. Open the `Feature Flags Dashboard` as described [here](#accessing-the-feature-flags-dashboard).
+2. Choose **New Flag**.
+3. Fill in the required fields. For example:
+   * **Name**:  `my-boolean-flag`
+   * **Description**: `Super cool feature`
+   * **State**: `OFF`
+5. Choose **Save**.
 
 ### 11. Evaluate the Newly Created Boolean Feature Flag
 
-> **Note**: Expect the variation to be false.
+> **Note**: Expect the variation to be `false`.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Enter the boolean feature flag name in the _Feature Flag Name_ field and choose _Evaluate_.
-3. Evaluate the newly created feature flag.
-The result should state that the feature flag is of type _BOOLEAN_ and its variation is _false_.
+2. Enter the Boolean feature flag name.
+3. Choose **Evaluate**.
+4. The result should state that the feature flag is of type `BOOLEAN` and its variation is `false`.
 
 ### 12. Enable the Boolean Feature Flag
 
-1. Open the Feature Flags dashboard as described [here](#accessing-the-feature-flags-dashboard).
-2. Enable the boolean feature flag using the switch in the _Active_ column.
+1. Open the `Feature Flags Dashboard` as described [here](#accessing-the-feature-flags-dashboard).
+2. Enable the Boolean feature flag using the switch in the **Active** column.
 
 ### 13. Verify that the Boolean Feature Flag is Enabled
 
-> **Note**: Expect the feature flag to be enabled.
+> **Note**: Expect the feature flag to be `enabled`.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Enter the boolean feature flag name in the _Feature Flag Name_ field and choose _Evaluate_.
-3. Evaluate the feature flag.
-The result should state that the feature flag is of type _BOOLEAN_ and its variation is _true_.
+2. Enter the Boolean feature flag name.
+3. Choose **Evaluate**.
+4. The result should state that the feature flag is of type `BOOLEAN` and its variation is `true`.
 
 ### 14. Create a New String Feature Flag
 
-1. Open the Feature Flags dashboard as described [here](#accessing-the-feature-flags-dashboard).
-2. Choose _New Flag_.
-3. Fill in the required fields (for example, 'my-string-flag' for _Name_, 'Coolest of features' for _Description_, choose _String_ as _Flag Type_ and 'OFF' for _State_).
-Enter the following values as different variations of the flag:
-  - _Var. 1_: _variation-when-inactive_
-  - _Var. 2_: _variation-when-active_
-  - _Var. 3_ (choose the add button (with a '+' sign) to add a field for it): _variation-for-friends-and-family_
-4. Select _Var. 2_ in the _Deliver_ combobox in the _Default Variation_ section.
-5. Choose _Save_.
+1. Open the `Feature Flags Dashboard` as described [here](#accessing-the-feature-flags-dashboard).
+2. Choose **New Flag**.
+3. Fill in the required fields. For example:
+    * **Name**: `my-string-flag`
+    * **Description**: `Coolest of features`
+    * **Type**: `String`
+    * **State**: `OFF`
+4. Enter the following values as different variations of the flag:
+    * **Var. 1**: `variation-when-inactive`
+    * **Var. 2**: `variation-when-active`
+    * **Var. 3** (choose the **Add** button with the '+' sign to add a new field): `variation-for-friends-and-family`
+5. From the **Default Variation**, open the **Deliver** combo box and select `Var. 2`.
+6. Choose **Save**.
 
 ### 15. Evaluate the Newly Created String Feature Flag
 
-> **Note**: Expect the variation to be _variation-when-inactive_.
+> **Note**: Expect the variation to be `variation-when-inactive`.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Enter the string feature flag name in the _Feature Flag Name_ field and choose _Evaluate_.
-3. Evaluate the newly created feature flag.
-The result should state that the feature flag is of type _STRING_ and its variation is _variation-when-inactive_.
+2. Enter the string feature flag name.
+3. Choose **Evaluate**.
+4. The result should state that the feature flag is of type `STRING` and its variation is `variation-when-inactive`.
 
 ### 16. Enable the String Feature Flag
 
-1. Open the Feature Flags dashboard as described [here](#accessing-the-feature-flags-dashboard).
-2. Enable the string feature flag using the switch in the _Active_ column.
+1. Open the `Feature Flags Dashboard` as described [here](#accessing-the-feature-flags-dashboard).
+2. Enable the string feature flag using the switch in the **Active** column.
 
 ### 17. Verify that the String Feature Flag is Enabled
 
-> **Note**: Expect the variation to be _variation-when-active_.
+> **Note**: Expect the variation to be `variation-when-active`.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Enter the string feature flag name in the _Feature Flag Name_ field and choose _Evaluate_.
-3. Evaluate the feature flag.
-The result should state that the feature flag is of type _STRING_ and its variation is _variation-when-active_.
+2. Enter the string feature flag name.
+3. Choose **Evaluate**.
+4. The result should state that the feature flag is of type `STRING` and its variation is `variation-when-active`.
 
 ### 18. Specify Direct Delivery Strategy of a Variation of the String Flag
 
-1. Open the Feature Flags dashboard as described [here](#accessing-the-feature-flags-dashboard).
+1. Open the `Feature Flags Dashboard` as described [here](#accessing-the-feature-flags-dashboard).
 2. Select the string feature flag.
-3. Set it to edit mode via choosing the _Edit Flag_ button in the toolbar.
-4. Go to _Strategy_ section, _Direct Delivery_ sub-section and choose the button with '+' sign.
-5. Select _Var. 3_ from the combobox and enter _friends-and-family_ in the text input.
-6. Choose _Save_.
+3. Choose the **Edit Flag** button.
+4. Go to the **Strategy** section, subsection **Direct Delivery**, and choose the '+' button.
+5. Select **Var. 3** from the combobox and enter `friends-and-family` in the text input.
+6. Choose **Save**.
 
 ### 19. Evaluate the String Feature Flag Using Identifier
 
-> **Note**: Expect the variation to be _variation-for-friends-and-family_.
+> **Note**: Expect the variation to be `variation-for-friends-and-family`.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
-2. Enter the string feature flag name in the _Feature Flag Name_ field,
-enter _friends-and-family_ in the _Identifier (optional)_ field and choose _Evaluate_.
-3. Evaluate the feature flag.
-The result should state that the feature flag is of type _STRING_ and its variation is _variation-for-friends-and-family_.
+2. Enter the string feature flag name.
+3. For the **Identifier (optional)** field, enter `friends-and-family`.
+4. Choose **Evaluate**.
+5. The result should state that the feature flag is of type `STRING` and its variation is `variation-for-friends-and-family`.
 
-> **Note**: Once direct delivery is configured, Feature Flags service requires providing an identifier.
-An error is returned if such is not present.
-Variation _variation-when-active_ is returned for all identifiers
-except those explicitly configured in the Feature Flags dashboard
-for which the provided rules apply (like for the _friends-and-family_ identifier).
+> Once **Direct Delivery** is configured, the Feature Flags service requires providing an identifier. If such is not present, an error is thrown.
+
+💡**NOTE:** `variation-when-active` is returned for all identifiers - except for those explicitly configured in the `Feature Flags Dashboard` for which the provided rules apply (like the `friends-and-family` identifier).
 
 ## Contributing
 
