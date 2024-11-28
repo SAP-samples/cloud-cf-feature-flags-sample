@@ -8,53 +8,76 @@ Feature Flags service Demo Application is a simple Spring Boot application that 
 
 ## Requirements
 
-* have set up [Maven 3.0.x](http://maven.apache.org/install.html)
-* have an [SAP BTP trial account on Cloud Foundry environment](https://help.sap.com/products/BTP/65de2977205c403bbc107264b8eccf4b/e50ab7b423f04a8db301d7678946626e.html)
-* have a [trial space on a Cloud Foundry instance](https://help.sap.com/products/BTP/65de2977205c403bbc107264b8eccf4b/fa5deb9cc4be4ca58070456cd2c47647.html#loioe9aed07891e545dd88192df013646897)
-* have set up a [curl](https://curl.haxx.se/download.html) plug-in for cmd
-* have [installed cf CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html)
+* You have set up [Maven 3.0.x](http://maven.apache.org/install.html).
+* You have an [SAP BTP enterprise (productive) account](https://help.sap.com/docs/btp/sap-business-technology-platform/getting-started-with-enterprise-account-in-cloud-foundry-environment) on Cloud Foundry environment. 
+
+  💡**NOTE:** You can also use a [trial account](https://help.sap.com/docs/btp/sap-business-technology-platform/getting-started-with-trial-account-in-cloud-foundry-environment) but some functionalities won't be available for you.
+* You have a space on a Cloud Foundry instance - [productive](https://help.sap.com/docs/btp/sap-business-technology-platform/create-spaces) or [trial](https://help.sap.com/docs/btp/sap-business-technology-platform/cf-env-setting-up-your-trial-account#create-your-trial-space).
+* You have set up the [curl](https://curl.haxx.se/download.html) plug-in for `cmd`.
+* You have installed [cf CLI](https://docs.cloudfoundry.org/cf-cli/install-go-cli.html).
 
 ## Running the Application on SAP BTP
 
-Follow these steps to run the Feature Flags Service Demo application on SAP BTP, Cloud Foundry environment.
+💡**NOTE:** This guide uses the **eu20** region (https://emea.cockpit.btp.cloud.sap/cockpit#). 
 
-> **Note:** This guide uses the Cloud Foundry trial account on Europe (Frankfurt) region (https://account.hanatrial.ondemand.com/cockpit#/home/overview). If you want to use a different region, you have to modify the domain in the requests. For more information about regions and hosts on SAP BTP, Cloud Foundry environment, see [Regions and Hosts](https://help.sap.com/viewer/65de2977205c403bbc107264b8eccf4b/Cloud/en-US/350356d1dc314d3199dca15bd2ab9b0e.html).
+> To use a different SAP BTP region, you need to modify the domain in the requests. See: [Cloud Foundry Regions and API Endpoints](https://help.sap.com/viewer/65de2977205c403bbc107264b8eccf4b/Cloud/en-US/350356d1dc314d3199dca15bd2ab9b0e.html)
+
+Follow the steps below to run `Feature Flags Demo Application` on SAP BTP, Cloud Foundry environment.
 
 <!-- toc -->
+[1. Build the feature-flags-demo Application](#1-build-the-feature-flags-demo-application)
 
-- [1. Build the feature-flags-demo Application](#1-build-the-feature-flags-demo-application)
-- [2. Edit application name in manifest file](#2-edit-application-name-in-manifest-file)
-- [3. Deploy feature-flags-demo on SAP BTP](#3-deploy-feature-flags-demo-on-sap-cloud-platform)
-- [4. Create a Service Instance of Feature Flags service](#4-create-a-service-instance-of-feature-flags-service)
-  * [4.1 Ensure the `feature-flags` Service Exists in the Marketplace](#41-ensure-the-feature-flags-service-exists-in-the-marketplace)
-  * [4.2 Create a Service Instance of Feature Flags with Plan `standard`](#42-create-a-service-instance-of-feature-flags-with-plan-standard)
-- [5. Call the feature-flags-demo Application's /vcap_services End-Point](#5-call-the-feature-flags-demo-applications-vcap_services-end-point)
-- [6. Bind feature-flags-demo to feature-flags-instance](#6-bind-feature-flags-demo-to-feature-flags-instance)
-- [7. Restage feature-flags-demo](#7-restage-feature-flags-demo)
-- [8. Ensure that feature-flags-instance is Bound to feature-flags-demo](#8-ensure-that-feature-flags-instance-is-bound-to-feature-flags-demo)
-- [Accessing the Demo Application](#accessing-the-demo-application)
-- [Accessing the Feature Flags Dashboard](#accessing-the-feature-flags-dashboard)
-- [9. Evaluate a Missing Feature Flag](#9-evaluate-a-missing-feature-flag)
-- [10. Create a New Boolean Feature Flag](#10-create-a-new-boolean-feature-flag)
-- [11. Evaluate the Newly Created Boolean Feature Flag](#11-evaluate-the-newly-created-boolean-feature-flag)
-- [12. Enable the Boolean Feature Flag](#12-enable-the-boolean-feature-flag)
-- [13. Verify that the Boolean Feature Flag is Enabled](#13-verify-that-the-boolean-feature-flag-is-enabled)
-- [14. Create a New String Feature Flag](#14-create-a-new-string-feature-flag)
-- [15. Evaluate the Newly Created String Feature Flag](#15-evaluate-the-newly-created-string-feature-flag)
-- [16. Enable the String Feature Flag](#16-enable-the-string-feature-flag)
-- [17. Verify that the String Feature Flag is Enabled](#17-verify-that-the-string-feature-flag-is-enabled)
-- [18. Specify Direct Delivery Strategy of a Variation of the String Flag](#18-specify-direct-delivery-strategy-of-a-variation-of-the-string-flag)
-- [19. Evaluate the String Feature Flag Using Identifier](#19-evaluate-the-string-feature-flag-using-identifier)
+[2. Edit application name in manifest file](#2-edit-application-name-in-manifest-file)
+
+[3. Deploy feature-flags-demo on SAP BTP](#3-deploy-feature-flags-demo-on-sap-cloud-platform)
+
+[4. Create a Service Instance of Feature Flags service](#4-create-a-service-instance-of-feature-flags-service)
+  * [Ensure the `feature-flags` Service Exists in the Marketplace](#41-ensure-the-feature-flags-service-exists-in-the-marketplace)
+  * [Create a Service Instance of Feature Flags with Plan `standard`](#42-create-a-service-instance-of-feature-flags-with-plan-standard)
+
+[5. Call the feature-flags-demo Application's /vcap_services End-Point](#5-call-the-feature-flags-demo-applications-vcap_services-end-point)
+
+[6. Bind feature-flags-demo to feature-flags-instance](#6-bind-feature-flags-demo-to-feature-flags-instance)
+
+[7. Restage feature-flags-demo](#7-restage-feature-flags-demo)
+
+[8. Ensure that feature-flags-instance is Bound to feature-flags-demo](#8-ensure-that-feature-flags-instance-is-bound-to-feature-flags-demo)
+  * [Accessing the Demo Application](#accessing-the-demo-application)
+  * [Accessing the Feature Flags Dashboard](#accessing-the-feature-flags-dashboard)
+
+[9. Evaluate a Missing Feature Flag](#9-evaluate-a-missing-feature-flag)
+
+[10. Create a New Boolean Feature Flag](#10-create-a-new-boolean-feature-flag)
+
+[11. Evaluate the Newly Created Boolean Feature Flag](#11-evaluate-the-newly-created-boolean-feature-flag)
+
+[12. Enable the Boolean Feature Flag](#12-enable-the-boolean-feature-flag)
+
+[13. Verify that the Boolean Feature Flag is Enabled](#13-verify-that-the-boolean-feature-flag-is-enabled)
+
+[14. Create a New String Feature Flag](#14-create-a-new-string-feature-flag)
+
+[15. Evaluate the Newly Created String Feature Flag](#15-evaluate-the-newly-created-string-feature-flag)
+
+[16. Enable the String Feature Flag](#16-enable-the-string-feature-flag)
+
+[17. Verify that the String Feature Flag is Enabled](#17-verify-that-the-string-feature-flag-is-enabled)
+
+[18. Specify Direct Delivery Strategy of a Variation of the String Flag](#18-specify-direct-delivery-strategy-of-a-variation-of-the-string-flag)
+
+[19. Evaluate the String Feature Flag Using Identifier](#19-evaluate-the-string-feature-flag-using-identifier)
 
 <!-- tocstop -->
 
 ### 1. Build the feature-flags-demo Application
 
+Run th following commands, consequently:
+
     $ git clone git@github.com:SAP/cloud-cf-feature-flags-sample.git
     $ cd cloud-cf-feature-flags-sample
     $ mvn clean install
 
-> **Note:** Alternatively, you can use the Eclipse IDE, use the `clean install` goal from _Run As > Maven Build..._ menu.
+> **Note:** Alternatively, you can use the Eclipse IDE by choosing the `clean install` goal from _Run As > Maven Build..._ menu.
 
 ### 2. Edit application name in manifest file
 
