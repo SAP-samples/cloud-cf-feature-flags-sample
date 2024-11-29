@@ -25,47 +25,40 @@ Feature Flags service Demo Application is a simple Spring Boot application that 
 Follow the steps below to run `Feature Flags Demo Application` on SAP BTP, Cloud Foundry environment.
 
 <!-- toc -->
-[1. Build the feature-flags-demo Application](#1-build-the-feature-flags-demo-application)
 
-[2. Edit application name in manifest file](#2-edit-application-name-in-manifest-file)
-
-[3. Deploy feature-flags-demo on SAP BTP](#3-deploy-feature-flags-demo-on-sap-cloud-platform)
-
-[4. Create a Service Instance of Feature Flags service](#4-create-a-service-instance-of-feature-flags-service)
-  * [Ensure the feature-flags service exists in the Service Marketplace](#41-ensure-the-feature-flags-service-exists-in-the-marketplace)
-  * [Create a Service Instance of Feature Flags with Plan `standard`](#42-create-a-service-instance-of-feature-flags-with-plan-standard)
-
-[5. Call the feature-flags-demo Application's /vcap_services End-Point](#5-call-the-feature-flags-demo-applications-vcap_services-end-point)
-
-[6. Bind feature-flags-demo to feature-flags-instance](#6-bind-feature-flags-demo-to-feature-flags-instance)
-
-[7. Restage feature-flags-demo](#7-restage-feature-flags-demo)
-
-[8. Ensure that feature-flags-instance is bound to feature-flags-demo](#8-ensure-that-feature-flags-instance-is-bound-to-feature-flags-demo)
-  * [Accessing the Demo Application](#accessing-the-demo-application)
-  * [Accessing the Feature Flags Dashboard](#accessing-the-feature-flags-dashboard)
-
-[9. Evaluate a Missing Feature Flag](#9-evaluate-a-missing-feature-flag)
-
-[10. Create a New Boolean Feature Flag](#10-create-a-new-boolean-feature-flag)
-
-[11. Evaluate the Newly Created Boolean Feature Flag](#11-evaluate-the-newly-created-boolean-feature-flag)
-
-[12. Enable the Boolean Feature Flag](#12-enable-the-boolean-feature-flag)
-
-[13. Verify that the Boolean Feature Flag is Enabled](#13-verify-that-the-boolean-feature-flag-is-enabled)
-
-[14. Create a New String Feature Flag](#14-create-a-new-string-feature-flag)
-
-[15. Evaluate the Newly Created String Feature Flag](#15-evaluate-the-newly-created-string-feature-flag)
-
-[16. Enable the String Feature Flag](#16-enable-the-string-feature-flag)
-
-[17. Verify that the String Feature Flag is Enabled](#17-verify-that-the-string-feature-flag-is-enabled)
-
-[18. Specify Direct Delivery Strategy of a Variation of the String Flag](#18-specify-direct-delivery-strategy-of-a-variation-of-the-string-flag)
-
-[19. Evaluate the String Feature Flag Using Identifier](#19-evaluate-the-string-feature-flag-using-identifier)
+- [Feature Flags Service Demo Application](#feature-flags-service-demo-application)
+  - [Description](#description)
+  - [Requirements](#requirements)
+  - [Running the Application on SAP BTP](#running-the-application-on-sap-btp)
+    - [1. Build the feature-flags-demo Application](#1-build-the-feature-flags-demo-application)
+    - [2. Edit application name in manifest file](#2-edit-application-name-in-manifest-file)
+    - [3. Deploy feature-flags-demo on SAP BTP](#3-deploy-feature-flags-demo-on-sap-btp)
+    - [4. Create a Service Instance of Feature Flags service](#4-create-a-service-instance-of-feature-flags-service)
+      - [4.1 Ensure the feature-flags service exists in the Service Marketplace](#41-ensure-the-feature-flags-service-exists-in-the-service-marketplace)
+      - [4.2 Create a Service Instance of Feature Flags with Plan `standard`](#42-create-a-service-instance-of-feature-flags-with-plan-standard)
+    - [5. Call the feature-flags-demo Application's /vcap\_services End-Point](#5-call-the-feature-flags-demo-applications-vcap_services-end-point)
+    - [6. Bind feature-flags-demo to feature-flags-instance](#6-bind-feature-flags-demo-to-feature-flags-instance)
+    - [7. Restage feature-flags-demo](#7-restage-feature-flags-demo)
+    - [8. Ensure that feature-flags-instance is bound to feature-flags-demo](#8-ensure-that-feature-flags-instance-is-bound-to-feature-flags-demo)
+    - [Accessing the Demo Application](#accessing-the-demo-application)
+    - [Accessing the Feature Flags Dashboard](#accessing-the-feature-flags-dashboard)
+    - [9. Evaluate a Missing Feature Flag](#9-evaluate-a-missing-feature-flag)
+    - [10. Create a New Boolean Feature Flag](#10-create-a-new-boolean-feature-flag)
+    - [11. Evaluate the Newly Created Boolean Feature Flag](#11-evaluate-the-newly-created-boolean-feature-flag)
+    - [12. Enable the Boolean Feature Flag](#12-enable-the-boolean-feature-flag)
+    - [13. Verify that the Boolean Feature Flag is Enabled](#13-verify-that-the-boolean-feature-flag-is-enabled)
+    - [14. Create a New String Feature Flag](#14-create-a-new-string-feature-flag)
+    - [15. Evaluate the Newly Created String Feature Flag](#15-evaluate-the-newly-created-string-feature-flag)
+    - [16. Enable the String Feature Flag](#16-enable-the-string-feature-flag)
+    - [17. Verify that the String Feature Flag is Enabled](#17-verify-that-the-string-feature-flag-is-enabled)
+    - [18. Specify Direct Delivery Strategy of a Variation of the String Flag](#18-specify-direct-delivery-strategy-of-a-variation-of-the-string-flag)
+    - [19. Evaluate the String Feature Flag Using Identifier](#19-evaluate-the-string-feature-flag-using-identifier)
+  - [Contributing](#contributing)
+  - [Code of Conduct](#code-of-conduct)
+  - [Licensing](#licensing)
+- [Contributing](#contributing)
+- [Code of Conduct](#code-of-conduct)
+- [Licensing](#licensing)
 
 <!-- tocstop -->
 
