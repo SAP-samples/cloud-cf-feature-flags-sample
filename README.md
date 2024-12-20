@@ -26,36 +26,29 @@ Follow the steps below to run `Feature Flags Demo Application` on SAP BTP, Cloud
 
 <!-- toc -->
 
-- [Feature Flags Service Demo Application](#feature-flags-service-demo-application)
-  - [Description](#description)
-  - [Requirements](#requirements)
-  - [Running the Application on SAP BTP](#running-the-application-on-sap-btp)
-    - [1. Build the feature-flags-demo Application](#1-build-the-feature-flags-demo-application)
-    - [2. Edit application name in manifest file](#2-edit-application-name-in-manifest-file)
-    - [3. Deploy feature-flags-demo on SAP BTP](#3-deploy-feature-flags-demo-on-sap-btp)
-    - [4. Create a Service Instance of Feature Flags service](#4-create-a-service-instance-of-feature-flags-service)
-      - [4.1 Ensure the feature-flags service exists in the Service Marketplace](#41-ensure-the-feature-flags-service-exists-in-the-service-marketplace)
-      - [4.2 Create a Service Instance of Feature Flags with Plan `standard`](#42-create-a-service-instance-of-feature-flags-with-plan-standard)
-    - [5. Call the feature-flags-demo Application's /vcap\_services End-Point](#5-call-the-feature-flags-demo-applications-vcap_services-end-point)
-    - [6. Bind feature-flags-demo to feature-flags-instance](#6-bind-feature-flags-demo-to-feature-flags-instance)
-    - [7. Restage feature-flags-demo](#7-restage-feature-flags-demo)
-    - [8. Ensure that feature-flags-instance is bound to feature-flags-demo](#8-ensure-that-feature-flags-instance-is-bound-to-feature-flags-demo)
-    - [Accessing the Demo Application](#accessing-the-demo-application)
-    - [Accessing the Feature Flags Dashboard](#accessing-the-feature-flags-dashboard)
-    - [9. Evaluate a Missing Feature Flag](#9-evaluate-a-missing-feature-flag)
-    - [10. Create a New Boolean Feature Flag](#10-create-a-new-boolean-feature-flag)
-    - [11. Evaluate the Newly Created Boolean Feature Flag](#11-evaluate-the-newly-created-boolean-feature-flag)
-    - [12. Enable the Boolean Feature Flag](#12-enable-the-boolean-feature-flag)
-    - [13. Verify that the Boolean Feature Flag is Enabled](#13-verify-that-the-boolean-feature-flag-is-enabled)
-    - [14. Create a New String Feature Flag](#14-create-a-new-string-feature-flag)
-    - [15. Evaluate the Newly Created String Feature Flag](#15-evaluate-the-newly-created-string-feature-flag)
-    - [16. Enable the String Feature Flag](#16-enable-the-string-feature-flag)
-    - [17. Verify that the String Feature Flag is Enabled](#17-verify-that-the-string-feature-flag-is-enabled)
-    - [18. Specify Direct Delivery Strategy of a Variation of the String Flag](#18-specify-direct-delivery-strategy-of-a-variation-of-the-string-flag)
-    - [19. Evaluate the String Feature Flag Using Identifier](#19-evaluate-the-string-feature-flag-using-identifier)
-  - [Contributing](#contributing)
-  - [Code of Conduct](#code-of-conduct)
-  - [Licensing](#licensing)
+  * [1. Build the feature-flags-demo Application](#1-build-the-feature-flags-demo-application)
+  * [2. Edit application name in manifest file](#2-edit-application-name-in-manifest-file)
+  * [3. Deploy feature-flags-demo on SAP BTP](#3-deploy-feature-flags-demo-on-sap-btp)
+  * [4. Create a Service Instance of Feature Flags service](#4-create-a-service-instance-of-feature-flags-service)
+    + [4.1 Ensure the feature-flags service exists in the Service Marketplace](#41-ensure-the-feature-flags-service-exists-in-the-service-marketplace)
+    + [4.2 Create a Service Instance of Feature Flags with Plan `standard`](#42-create-a-service-instance-of-feature-flags-with-plan-standard)
+  * [5. Call the feature-flags-demo Application's /vcap_services End-Point](#5-call-the-feature-flags-demo-applications-vcap_services-end-point)
+  * [6. Bind feature-flags-demo to feature-flags-instance](#6-bind-feature-flags-demo-to-feature-flags-instance)
+  * [7. Restage feature-flags-demo](#7-restage-feature-flags-demo)
+  * [8. Ensure that feature-flags-instance is bound to feature-flags-demo](#8-ensure-that-feature-flags-instance-is-bound-to-feature-flags-demo)
+  * [Accessing the Demo Application](#accessing-the-demo-application)
+  * [Accessing the Feature Flags Dashboard](#accessing-the-feature-flags-dashboard)
+  * [9. Evaluate a Missing Feature Flag](#9-evaluate-a-missing-feature-flag)
+  * [10. Create a New Boolean Feature Flag](#10-create-a-new-boolean-feature-flag)
+  * [11. Evaluate the Newly Created Boolean Feature Flag](#11-evaluate-the-newly-created-boolean-feature-flag)
+  * [12. Enable the Boolean Feature Flag](#12-enable-the-boolean-feature-flag)
+  * [13. Verify that the Boolean Feature Flag is Enabled](#13-verify-that-the-boolean-feature-flag-is-enabled)
+  * [14. Create a New String Feature Flag](#14-create-a-new-string-feature-flag)
+  * [15. Evaluate the Newly Created String Feature Flag](#15-evaluate-the-newly-created-string-feature-flag)
+  * [16. Enable the String Feature Flag](#16-enable-the-string-feature-flag)
+  * [17. Verify that the String Feature Flag is Enabled](#17-verify-that-the-string-feature-flag-is-enabled)
+  * [18. Specify Direct Delivery Strategy of a Variation of the String Flag](#18-specify-direct-delivery-strategy-of-a-variation-of-the-string-flag)
+  * [19. Evaluate the String Feature Flag Using Identifier](#19-evaluate-the-string-feature-flag-using-identifier)
 - [Contributing](#contributing)
 - [Code of Conduct](#code-of-conduct)
 - [Licensing](#licensing)
@@ -86,43 +79,64 @@ Cloud Foundry does not allow two applications with the same name to be deployed 
 
 ### 3. Deploy feature-flags-demo on SAP BTP
 
-Run the following commands, consequently:
+ 1. Log in to your Cloud Foundry landscape. (The `eu20` region is just an example.) Run:
 
-    $ cf api https://api.cf.eu20.hana.ondemand.com
-    $ cf login
+    ```
+    $ cf login -a https://api.cf.eu20.hana.ondemand.com
+    ```
+
+2. Choose your subaccount (org) and space.
+
+3. Deploy the application. Run:
+
+    ```
     $ cf push
+    ```
 
 ### 4. Create a Service Instance of Feature Flags service
 
 #### 4.1 Ensure the feature-flags service exists in the Service Marketplace
 
-    $ cf marketplace
+Run the following command:   
+  ```
+  $ cf marketplace
+  ```  
+Result:
+
 
     -----
     Getting services from marketplace in org <ORG_ID> / space <SPACE> as <USER_ID>...
     OK
     service          	plans    	description
     ...
-    feature-flags    	standard     	Feature Flags service for controlling feature rollout
+    feature-flags    	lite, standard     	Feature Flags service for controlling feature rollout
     ...
 
+**NOTE:**  If you're using a trial account, the only available service plan will be `lite`.
 
-#### 4.2 Create a Service Instance of Feature Flags with Plan `standard`
+#### 4.2 Create a Service Instance of Feature Flags
 
+* For a productive account, run:
+  
+    ```
     $ cf create-service feature-flags standard feature-flags-instance
+    ```
 
-    -----
-    Creating service instance feature-flags-instance in org <ORG_ID> / space <SPACE> as <USER_ID>...
-    OK
+* For a trial account, run:
 
-> **Note:** Alternatively, you can use the SAP BTP cockpit. See [Create a Service Instance](https://help.sap.com/docs/feature-flags-service/sap-feature-flags-service/initial-setup#loioc7b30b5bf54149148d2302617917dc3e).
+    ```
+    $ cf create-service feature-flags lite feature-flags-instance
+    ```
+
+
+**Note:** Alternatively, you can use the SAP BTP cockpit. See [Create a Service Instance](https://help.sap.com/docs/feature-flags-service/sap-feature-flags-service/initial-setup#loioc7b30b5bf54149148d2302617917dc3e).
 
 
 ### 5. Call the feature-flags-demo Application's /vcap_services End-Point
 
 > **Note**: Expect to receive an empty JSON code - {}.
 
-The `/vcap_services` end-point simply returns the content of the _VCAP_SERVICES_ environment variable. As for now, there is no service instances bound to `feature-flags-demo`, thus you receive an empty JSON.
+The `/vcap_services` end-point simply returns the content of the _VCAP_SERVICES_ environment variable. As for now, there is no service instance bound to `feature-flags-demo`, thus you receive an empty JSON.
 
 In the command you use the following URL: `\<application_URL\>/vcap_services`. 
 
@@ -246,12 +260,15 @@ The `Feature Flags Dashboard` will be accessed multiple times throughout this tu
 
 ### 13. Verify that the Boolean Feature Flag is Enabled
 
-> **Note**: Expect the feature flag to be `enabled`.
+> **Note**: Expect the variation to be `true`.
 
 1. Open the demo application as described [here](#accessing-the-demo-application).
 2. Enter the Boolean feature flag name.
 3. Choose **Evaluate**.
 4. The result should state that the feature flag is of type `BOOLEAN` and its variation is `true`.
+
+> ### CAUTION!
+> The next procedures (14 - 19) are only applicable for productive accounts, which means plan `standard`.
 
 ### 14. Create a New String Feature Flag
 
