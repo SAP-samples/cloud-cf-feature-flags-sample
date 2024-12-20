@@ -109,10 +109,10 @@ Result:
     OK
     service          	plans    	description
     ...
-    feature-flags    	standard     	Feature Flags service for controlling feature rollout
+    feature-flags    	lite, standard     	Feature Flags service for controlling feature rollout
     ...
 
-**NOTE:**  If you're using a trial account, the service plan will be `lite`.
+**NOTE:**  If you're using a trial account, the only available service plan will be `lite`.
 
 #### 4.2 Create a Service Instance of Feature Flags
 
