@@ -7,19 +7,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.cloud.localconfig.LocalConfigConnector;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import com.sap.cloud.service.flags.demo.service.Flag;
 import com.sap.cloud.service.flags.demo.service.FlagType;
@@ -27,31 +22,24 @@ import com.sap.cloud.service.flags.demo.service.EvaluationException;
 import com.sap.cloud.service.flags.demo.FeatureFlagsDemoApplication;
 import com.sap.cloud.service.flags.demo.service.FeatureFlagsService;
 
-@RunWith(SpringRunner.class)
-@WebAppConfiguration
-@ContextConfiguration(classes = FeatureFlagsDemoApplication.class)
+@SpringBootTest(classes = FeatureFlagsDemoApplication.class)
+@AutoConfigureMockMvc
 public class DemoControllerTest {
 
-	static {
-		System.setProperty(LocalConfigConnector.PROPERTIES_FILE_PROPERTY, "src/test/resources/config.properties");
-	}
-
 	@Autowired
-	private WebApplicationContext context;
-
 	private MockMvc mockMvc;
+
 	private Flag booleanFlag;
 	private Flag stringFlag;
 
-	@MockBean
+	@MockitoBean
 	private FeatureFlagsService featureFlagsService;
 
-	@SpyBean
+	@MockitoSpyBean
 	private DemoController demoController;
 
-	@Before
+	@BeforeEach
 	public void setUp() {
-		this.mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
 		this.booleanFlag = new Flag(FlagType.BOOLEAN, "true");
 		this.stringFlag = new Flag(FlagType.STRING, "variation-1");
 	}

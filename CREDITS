@@ -2,11 +2,14 @@ This program references the following third party open source or other free down
 The third party licensors of these components may provide additional license rights,
 terms and conditions and/or require certain notices as described below.
 
-Spring Boot (https://projects.spring.io/spring-boot/)
+Spring Boot (https://spring.io/projects/spring-boot)
 Licensed under Apache License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
 
-Thymeleaf (http://www.thymeleaf.org)
+Thymeleaf (https://www.thymeleaf.org)
 Licensed under Apache License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
 
-Spring Cloud Connectors (http://cloud.spring.io/spring-cloud-connectors/)
+Thymeleaf Layout Dialect (https://github.com/ultraq/thymeleaf-layout-dialect)
+Licensed under Apache License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+
+Gson (https://github.com/google/gson)
 Licensed under Apache License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
