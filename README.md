@@ -9,7 +9,7 @@ Feature Flags service Demo Application is a simple Spring Boot application that 
 ## Requirements
 
 * You have set up [Maven 3.0.x](http://maven.apache.org/install.html).
-* You have an [SAP BTP enterprise (productive) account](https://help.sap.com/docs/btp/sap-business-technology-platform/getting-started-with-enterprise-account-in-cloud-foundry-environment) on Cloud Foundry environment. 
+* You have an [SAP BTP enterprise (productive) account](https://help.sap.com/docs/btp/sap-business-technology-platform/getting-started-with-enterprise-account-in-cloud-foundry-environment) on Cloud Foundry environment.
 
   💡**NOTE:** You can also use a [trial account](https://help.sap.com/docs/btp/sap-business-technology-platform/getting-started-with-trial-account-in-cloud-foundry-environment) but some functionalities won't be available for you.
 * You have a space on a Cloud Foundry instance - [productive](https://help.sap.com/docs/btp/sap-business-technology-platform/create-spaces) or [trial](https://help.sap.com/docs/btp/sap-business-technology-platform/cf-env-setting-up-your-trial-account#create-your-trial-space).
@@ -18,7 +18,7 @@ Feature Flags service Demo Application is a simple Spring Boot application that 
 
 ## Running the Application on SAP BTP
 
-💡**NOTE:** This guide uses the **eu20** region (https://emea.cockpit.btp.cloud.sap/cockpit#). 
+💡**NOTE:** This guide uses the **eu20** region (https://emea.cockpit.btp.cloud.sap/cockpit#).
 
 > To use a different SAP BTP region, you need to modify the domain in the requests. See: [Cloud Foundry Regions and API Endpoints](https://help.sap.com/viewer/65de2977205c403bbc107264b8eccf4b/Cloud/en-US/350356d1dc314d3199dca15bd2ab9b0e.html)
 
@@ -67,7 +67,7 @@ Run the following commands, consequently:
 
 ### 2. Edit application name in manifest file
 
-It's quite possible that someone else has already deployed the `Feature Flags Demo Application` with the name **feature-flags-demo** (as it is currently set in the `manifest.yml` file). 
+It's quite possible that someone else has already deployed the `Feature Flags Demo Application` with the name **feature-flags-demo** (as it is currently set in the `manifest.yml` file).
 Cloud Foundry does not allow two applications with the same name to be deployed in the same region! Therefore, we **highly recommend** that you change the application name in the `manifest.yml` file before deploying. For example:
 
     ---
@@ -97,10 +97,10 @@ Cloud Foundry does not allow two applications with the same name to be deployed 
 
 #### 4.1 Ensure the feature-flags service exists in the Service Marketplace
 
-Run the following command:   
+Run the following command:
   ```
   $ cf marketplace
-  ```  
+  ```
 Result:
 
 
@@ -117,7 +117,7 @@ Result:
 #### 4.2 Create a Service Instance of Feature Flags
 
 * For a productive account, run:
-  
+
     ```
     $ cf create-service feature-flags standard feature-flags-instance
     ```
@@ -138,7 +138,7 @@ Result:
 
 The `/vcap_services` end-point simply returns the content of the _VCAP_SERVICES_ environment variable. As for now, there is no service instance bound to `feature-flags-demo`, thus you receive an empty JSON.
 
-In the command you use the following URL: `\<application_URL\>/vcap_services`. 
+In the command you use the following URL: `\<application_URL\>/vcap_services`.
 
 To find the value of `\<application_URL\>`, go to the SAP BTP cockpit > **feature-flag-demo** > **Overview** > **Application Routes**.
 
@@ -148,7 +148,7 @@ To call the application, run (for example):
 
 ### 6. Bind feature-flags-demo to feature-flags-instance
 
-    $ cf bind-service feature-flags-demo feature-flags-instance
+    $ cf bind-service feature-flags-demo feature-flags-instance -c '{"enableBasicAuth": true}'
 
     -----
     Binding service feature-flags-instance to app feature-flags-demo in org <ORG_ID> / space <SPACE> as <USER_ID>...
@@ -202,7 +202,7 @@ Sample JSON response:
 
 ### Accessing the Demo Application
 
-The web interface of the demo application will be accessed multiple times throughout this tutorial. Here is how to open it: 
+The web interface of the demo application will be accessed multiple times throughout this tutorial. Here is how to open it:
 
 1. Go to the SAP BTP cockpit.
 2. Navigate to the `feature-flags-demo` application overview.
@@ -211,7 +211,7 @@ The web interface of the demo application will be accessed multiple times throug
 
 ### Accessing the Feature Flags Dashboard
 
-The `Feature Flags Dashboard` will be accessed multiple times throughout this tutorial. Here is how to open it: 
+The `Feature Flags Dashboard` will be accessed multiple times throughout this tutorial. Here is how to open it:
 
 1. Go to the SAP BTP cockpit.
 2. Navigate to your subaccount.
@@ -219,7 +219,7 @@ The `Feature Flags Dashboard` will be accessed multiple times throughout this tu
 4. Access **Feature Flags Dashboard** from the list of subscribed applications.
 5. Select the service instance you are currently working with.
 
-💡**NOTE:** The dashboard URL always has the following pattern: 
+💡**NOTE:** The dashboard URL always has the following pattern:
 
 `https://<subdomain\>.feature-flags-dashboard.cfapps.eu20.hana.ondemand.com/manageinstances/<instance-id\>`
 
@@ -256,7 +256,7 @@ The `Feature Flags Dashboard` will be accessed multiple times throughout this tu
 ### 12. Enable the Boolean Feature Flag
 
 1. Open the `Feature Flags Dashboard` as described [here](#accessing-the-feature-flags-dashboard).
-2. Enable the Boolean feature flag using the switch in the **Active** column.
+2. Enable the Boolean feature flag using the switch in the **Enabled** column.
 
 ### 13. Verify that the Boolean Feature Flag is Enabled
 
@@ -283,7 +283,7 @@ The `Feature Flags Dashboard` will be accessed multiple times throughout this tu
     * **Var. 1**: `variation-when-inactive`
     * **Var. 2**: `variation-when-active`
     * **Var. 3** (choose the **Add** button with the '+' sign to add a new field): `variation-for-friends-and-family`
-5. From the **Default Variation**, open the **Deliver** combo box and select `Var. 2`.
+5. From the **Default Variation** tab in the **Environment Details** section, **Strategy** subsection, open the **Deliver** combo box and select `Var. 2`.
 6. Choose **Save**.
 
 ### 15. Evaluate the Newly Created String Feature Flag
@@ -298,7 +298,7 @@ The `Feature Flags Dashboard` will be accessed multiple times throughout this tu
 ### 16. Enable the String Feature Flag
 
 1. Open the `Feature Flags Dashboard` as described [here](#accessing-the-feature-flags-dashboard).
-2. Enable the string feature flag using the switch in the **Active** column.
+2. Enable the string feature flag using the switch in the **Enabled** column.
 
 ### 17. Verify that the String Feature Flag is Enabled
 
@@ -314,7 +314,7 @@ The `Feature Flags Dashboard` will be accessed multiple times throughout this tu
 1. Open the `Feature Flags Dashboard` as described [here](#accessing-the-feature-flags-dashboard).
 2. Select the string feature flag.
 3. Choose the **Edit Flag** button.
-4. Go to the **Strategy** section, subsection **Direct Delivery**, and choose the '+' button.
+4. Go to the **Environment Details** section, **Strategy** subsection, **Direct Delivery** tab, and choose the '+' button.
 5. Select **Var. 3** from the combobox and enter `friends-and-family` in the text input.
 6. Choose **Save**.
 
