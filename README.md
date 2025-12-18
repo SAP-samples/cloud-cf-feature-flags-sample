@@ -148,7 +148,7 @@ To call the application, run (for example):
 
 ### 6. Bind feature-flags-demo to feature-flags-instance
 
-    $ cf bind-service feature-flags-demo feature-flags-instance
+    $ cf bind-service feature-flags-demo feature-flags-instance -c '{"enableBasicAuth": true}'
 
     -----
     Binding service feature-flags-instance to app feature-flags-demo in org <ORG_ID> / space <SPACE> as <USER_ID>...
