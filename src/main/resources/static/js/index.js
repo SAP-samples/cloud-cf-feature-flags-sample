@@ -4,7 +4,9 @@ $(document).ready(function () {
     evaluationAnchor.click(function (event) {
         var name = $('#feature-flag-name-input').val();
         var identifier = $('#feature-flag-identifier-input').val();
-        var href = `/evaluate/${name}?identifier=${identifier}`;
+        var encodedName = encodeURIComponent(name);
+        var encodedIdentifier = encodeURIComponent(identifier);
+        var href = `/evaluate/${encodedName}?identifier=${encodedIdentifier}`;
         evaluationAnchor.attr('href', href);
     });
 

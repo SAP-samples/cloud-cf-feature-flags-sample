@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
 
@@ -68,18 +67,28 @@ public class CloudConfig {
 			JsonObject service = featureFlagsServices.get(0).getAsJsonObject();
 			JsonObject credentials = service.getAsJsonObject("credentials");
 
-			String uri = credentials.get("uri").getAsString();
-			String username = credentials.get("username").getAsString();
-			String password = credentials.get("password").getAsString();
+			String uri = credentials.getAsJsonPrimitive("uri").getAsString();
+			JsonObject x509 = credentials.getAsJsonObject("x509");
+
+			String certUrl = x509.getAsJsonPrimitive("certurl").getAsString();
+			String certificate = x509.getAsJsonPrimitive("certificate").getAsString();
+			String key = x509.getAsJsonPrimitive("key").getAsString();
+			String clientId = x509.getAsJsonPrimitive("clientid").getAsString();
 
 			URI baseUri = createBaseUri(uri);
-			RestOperations restOperations = createRestOperations(username, password);
+			OAuthTokenProvider tokenProvider = new OAuthTokenProvider(createTokenEndpoint(certUrl), certificate, key,
+					clientId);
+			RestOperations restOperations = createRestOperations(tokenProvider);
 
 			return new FeatureFlagsService(baseUri, restOperations);
 		} catch (Exception e) {
 			LOGGER.error(NO_FEATURE_FLAGS_SERVICE_INSTANCE_FOUND_MESSAGE, e);
 			return null;
 		}
+	}
+
+	private String createTokenEndpoint(String certUrl) {
+		return certUrl.endsWith("/") ? certUrl + "oauth/token" : certUrl + "/oauth/token";
 	}
 
 	private URI createBaseUri(String serviceInfoUri) {
@@ -92,10 +101,13 @@ public class CloudConfig {
 		}
 	}
 
-	private RestOperations createRestOperations(String username, String password) {
+	private RestOperations createRestOperations(OAuthTokenProvider tokenProvider) {
 		RestTemplate restTemplate = new RestTemplate();
-		ClientHttpRequestInterceptor basicAuthInterceptor = new BasicAuthenticationInterceptor(username, password);
-		restTemplate.getInterceptors().add(basicAuthInterceptor);
+		ClientHttpRequestInterceptor oauthInterceptor = (request, body, execution) -> {
+			request.getHeaders().setBearerAuth(tokenProvider.getAccessToken());
+			return execution.execute(request, body);
+		};
+		restTemplate.getInterceptors().add(oauthInterceptor);
 		return restTemplate;
 	}
 }
