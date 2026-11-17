@@ -215,7 +215,7 @@ The `Feature Flags Dashboard` will be accessed multiple times throughout this tu
     * **Var. 1**: `variation-when-inactive`
     * **Var. 2**: `variation-when-active`
     * **Var. 3** (choose the **Add** button with the '+' sign to add a new field): `variation-for-friends-and-family`
-5. From the **Default Variation** tab in the **Environment Details** section, **Strategy** subsection, open the **Deliver** combo box and select `Var. 2`.
+5. From the **Default Variation** tab in the **Strategy** section open the **Deliver** combo box and select `Var. 2`.
 6. Choose **Save**.
 
 ### 11. Evaluate the Newly Created String Feature Flag
@@ -246,7 +246,7 @@ The `Feature Flags Dashboard` will be accessed multiple times throughout this tu
 1. Open the `Feature Flags Dashboard` as described [here](#accessing-the-feature-flags-dashboard).
 2. Select the string feature flag.
 3. Choose the **Edit Flag** button.
-4. Go to the **Environment Details** section, **Strategy** subsection, **Direct Delivery** tab, and choose the '+' button.
+4. Go to the **Strategy** section, **Direct Delivery** tab, and choose the '+' button.
 5. Select **Var. 3** from the combobox and enter `friends-and-family` in the text input.
 6. Choose **Save**.
 
