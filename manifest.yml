@@ -4,3 +4,5 @@ applications:
   path: target/feature-flags-demo.jar
   env:
     JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 21.+ } }'
+  services:
+    - feature-flags-instance

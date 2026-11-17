@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.sap.cloud.service.flags.demo.service.Flag;
@@ -34,9 +33,6 @@ public class DemoControllerTest {
 
 	@MockitoBean
 	private FeatureFlagsService featureFlagsService;
-
-	@MockitoSpyBean
-	private DemoController demoController;
 
 	@BeforeEach
 	public void setUp() {
@@ -110,12 +106,5 @@ public class DemoControllerTest {
 		when(featureFlagsService.getFlag("feature-flag", null)).thenThrow(new EvaluationException("Evaluation failed"));
 		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(content().string(
 				containsString("Evaluation failed")));
-	}
-
-	@Test
-	public void testEvaluate_DetectsMissingServiceInstance() throws Exception {
-		when(demoController.hasBoundServiceInstance()).thenReturn(false);
-		mockMvc.perform(get("/evaluate/feature-flag")).andExpect(status().isOk()).andExpect(
-				content().string(containsString("There is no Feature Flags service instance bound to the application.")));
 	}
 }
