@@ -1,7 +1,5 @@
 package com.sap.cloud.service.flags.demo.controller;
 
-import java.util.Optional;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,17 +17,17 @@ import com.sap.cloud.service.flags.demo.service.Flag;
 @Controller
 public class DemoController {
 
-	private Optional<FeatureFlagsService> featureFlagsServiceOptional;
+	private final FeatureFlagsService featureFlagsService;
 
 	/**
 	 * Constructs a new {@link DemoController} with given
 	 * {@link FeatureFlagsService}.
 	 *
-	 * @param featureFlagsServiceOptional
+	 * @param featureFlagsService
 	 */
 
-	public DemoController(final Optional<FeatureFlagsService> featureFlagsServiceOptional) {
-		this.featureFlagsServiceOptional = featureFlagsServiceOptional;
+	public DemoController(final FeatureFlagsService featureFlagsService) {
+		this.featureFlagsService = featureFlagsService;
 	}
 
 	/**
@@ -63,16 +61,9 @@ public class DemoController {
 	public String evaluate(@PathVariable final String id, @RequestParam(required=false) final String identifier, final ModelMap modelMap) {
 		String template = "evaluation";
 
-		boolean credentialsAvailable = hasBoundServiceInstance();
-		modelMap.addAttribute("credentialsAvailable", credentialsAvailable);
-
-		if (!credentialsAvailable) {
-			return template;
-		}
-
 		Flag flag;
 		try {
-			flag = featureFlagsServiceOptional.get().getFlag(id, identifier);
+			flag = featureFlagsService.getFlag(id, identifier);
 		} catch (EvaluationException e) {
 			modelMap.addAttribute("backendError", e.getMessage());
 			return template;
@@ -86,9 +77,5 @@ public class DemoController {
 		}
 
 		return template;
-	}
-
-	protected boolean hasBoundServiceInstance() {
-		return featureFlagsServiceOptional.isPresent();
 	}
 }

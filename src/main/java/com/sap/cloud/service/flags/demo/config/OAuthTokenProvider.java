@@ -94,8 +94,7 @@ public final class OAuthTokenProvider {
 		try {
 			PemSslStoreDetails keyStoreDetails = PemSslStoreDetails.forCertificates(certificatePem)
 					.withPrivateKey(privateKeyPem);
-			PemSslStoreDetails trustStoreDetails = PemSslStoreDetails.forCertificates(certificatePem);
-			PemSslStoreBundle storeBundle = new PemSslStoreBundle(keyStoreDetails, trustStoreDetails);
+			PemSslStoreBundle storeBundle = new PemSslStoreBundle(keyStoreDetails, null);
 			SslBundle sslBundle = SslBundle.of(storeBundle);
 			return sslBundle.createSslContext();
 		} catch (Exception ex) {

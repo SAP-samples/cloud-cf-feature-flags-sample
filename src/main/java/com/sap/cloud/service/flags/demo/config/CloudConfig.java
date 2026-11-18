@@ -3,8 +3,6 @@ package com.sap.cloud.service.flags.demo.config;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,41 +25,35 @@ import com.sap.cloud.service.flags.demo.service.FeatureFlagsService;
 @Profile({ "cloud", "default" })
 public class CloudConfig {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CloudConfig.class);
-
 	private static final String NO_FEATURE_FLAGS_SERVICE_INSTANCE_FOUND_MESSAGE = "There is no Feature Flags service instance bound to the application.";
 
 	@Value("${VCAP_SERVICES:#{null}}")
 	private String vcapServices;
 
 	/**
-	 * Creates a {@link FeatureFlagsService} for both cloud and local
-	 * environment. If there is no Feature Flags instance bound to the
-	 * application in the cloud, then {@code null} is returned.
+	 * Creates a {@link FeatureFlagsService} for both cloud and local environment.
 	 *
 	 * @return instance of {@link FeatureFlagsService}
+	 * @throws IllegalStateException if there is no Feature Flags service instance bound to the application
 	 */
 
 	@Bean
 	public FeatureFlagsService featureFlagsService() {
-		try {
-			if (vcapServices == null || vcapServices.isEmpty()) {
-				LOGGER.warn(NO_FEATURE_FLAGS_SERVICE_INSTANCE_FOUND_MESSAGE);
-				return null;
-			}
+		if (vcapServices == null || vcapServices.isEmpty()) {
+			throw new IllegalStateException(NO_FEATURE_FLAGS_SERVICE_INSTANCE_FOUND_MESSAGE);
+		}
 
+		try {
 			Gson gson = new Gson();
 			JsonObject vcapJson = gson.fromJson(vcapServices, JsonObject.class);
 
 			if (!vcapJson.has("feature-flags")) {
-				LOGGER.warn(NO_FEATURE_FLAGS_SERVICE_INSTANCE_FOUND_MESSAGE);
-				return null;
+				throw new IllegalStateException(NO_FEATURE_FLAGS_SERVICE_INSTANCE_FOUND_MESSAGE);
 			}
 
 			JsonArray featureFlagsServices = vcapJson.getAsJsonArray("feature-flags");
 			if (featureFlagsServices.size() == 0) {
-				LOGGER.warn(NO_FEATURE_FLAGS_SERVICE_INSTANCE_FOUND_MESSAGE);
-				return null;
+				throw new IllegalStateException(NO_FEATURE_FLAGS_SERVICE_INSTANCE_FOUND_MESSAGE);
 			}
 
 			JsonObject service = featureFlagsServices.get(0).getAsJsonObject();
@@ -81,9 +73,10 @@ public class CloudConfig {
 			RestOperations restOperations = createRestOperations(tokenProvider);
 
 			return new FeatureFlagsService(baseUri, restOperations);
+		} catch (IllegalStateException e) {
+			throw e;
 		} catch (Exception e) {
-			LOGGER.error(NO_FEATURE_FLAGS_SERVICE_INSTANCE_FOUND_MESSAGE, e);
-			return null;
+			throw new IllegalStateException(NO_FEATURE_FLAGS_SERVICE_INSTANCE_FOUND_MESSAGE, e);
 		}
 	}
 

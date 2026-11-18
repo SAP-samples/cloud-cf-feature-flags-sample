@@ -1,6 +1,8 @@
 package com.sap.cloud.service.flags.demo.service;
 
 import java.net.URI;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,11 +48,15 @@ public class FeatureFlagsService {
 		// @formatter:off
 		UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromUri(baseUri).path("/api/v2/evaluate/{id}");
 
+		Map<String, Object> vars = new LinkedHashMap<>();
+		vars.put("id", id);
+
 		if (identifier != null && identifier.length() > 0) {
-			urlBuilder.queryParam("identifier", identifier);
+			urlBuilder.queryParam("identifier", "{identifier}");
+			vars.put("identifier", identifier);
 		}
 
-		URI url = urlBuilder.buildAndExpand(id).toUri();
+		URI url = urlBuilder.encode().buildAndExpand(vars).toUri();
 		// @formatter:on
 
 		try {

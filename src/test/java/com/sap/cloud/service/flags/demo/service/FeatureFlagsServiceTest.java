@@ -71,6 +71,19 @@ public class FeatureFlagsServiceTest {
 	}
 
 	@Test
+	public void testGetFeatureFlag_EncodesIdentifier_WithSpecialCharacters() {
+		URI serviceUri = UriComponentsBuilder.fromUri(EVALUATION_URI)
+				.queryParam("identifier", "abc%26injected%3Devil")
+				.build(true).toUri();
+
+		ResponseEntity<Flag> responseEntity = new ResponseEntity<Flag>(booleanTrueFlag, HttpStatus.OK);
+		when(restOperations.getForEntity(serviceUri, Flag.class)).thenReturn(responseEntity);
+
+		Flag actual = featureFlagsService.getFlag("feature-flag", "abc&injected=evil");
+		assertEquals(booleanTrueFlag, actual);
+	}
+
+	@Test
 	public void testGetFeatureFlag_ReturnsNull_WhenHttpNotFound() {
 		when(restOperations.getForEntity(EVALUATION_URI, Flag.class)).thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
